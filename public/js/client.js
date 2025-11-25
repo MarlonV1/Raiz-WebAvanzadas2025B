@@ -28,7 +28,6 @@ if (form && socket) {
     const msg = { user, text, timestamp: new Date().toISOString() };
     socket.emit("chat message", msg);
     input.value = "";
-    appendMessage(msg); // mostrar localmente
   });
 }
 
