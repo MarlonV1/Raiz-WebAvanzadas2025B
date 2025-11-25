@@ -2,13 +2,13 @@
 
 **Proyecto monolítico Node.js + Express + SQL Server**
 
-## 📋 Requisitos
+## Requisitos
 
 - Node.js v16+
 - SQL Server 2019+ (SSMS 21)
 - npm
 
-## 🚀 Instalación y Setup
+## Instalación y Setup
 
 ### 1. Clonar/Descargar el proyecto
 
@@ -42,7 +42,7 @@ cp .env.example .env
    - Crea el usuario `raiz_app_user`
    - Crea todas las tablas y datos iniciales
 
-**Opción B: Actualizar el hash bcrypt del admin** (si ya ejecutaste create_raiz_db.sql antes)
+**Opción B: Actualizar el hash bcrypt del admin** (si ya se ejecutó create_raiz_db.sql antes)
 
 1. Abre `sql/update_admin_hash.sql`
 2. Presiona **F5** para ejecutar
@@ -70,7 +70,7 @@ http://localhost:3000
 
 ---
 
-## 🔐 Credenciales Predeterminadas
+## Credenciales Predeterminadas
 
 **Usuario Admin (creado en la DB):**
 
@@ -81,7 +81,7 @@ http://localhost:3000
 
 ---
 
-## 🗺️ Rutas y Funcionalidad
+## Rutas y Funcionalidad
 
 ### Autenticación
 
@@ -103,7 +103,7 @@ http://localhost:3000
 
 ---
 
-## 🏗️ Arquitectura Monolítica
+## Arquitectura Monolítica
 
 ```
 Cliente (Navegador)
@@ -125,15 +125,14 @@ SQL Server (RaizDB)
 
 **Características:**
 
-- ✅ SSR (Server Side Rendering) con EJS
-- ✅ Autenticación con bcryptjs + express-session
-- ✅ SQL directo con librería `mssql` (sin ORM)
-- ✅ Socket.IO integrado en el mismo puerto (3000)
-- ✅ Comentarios en español
+- SSR (Server Side Rendering) con EJS
+- Autenticación con bcryptjs + express-session
+- SQL directo con librería `mssql`
+- Socket.IO integrado (puerto 3000)
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Prueba de conexión BD
 
@@ -154,17 +153,7 @@ Verifica:
 node generate-bcrypt-hash.js
 ```
 
-Usa esto si necesitas generar un nuevo hash para cambiar contraseñas.
-
----
-
-## 🛠️ Scripts Disponibles
-
-```bash
-npm run dev      # Iniciar servidor con nodemon (auto-reload)
-npm start        # Iniciar servidor (sin auto-reload)
-npm test         # Ejecutar tests (configurar según necesidad)
-```
+Importante: Usa unicamente si necesitas generar un nuevo hash para cambiar contraseñas.
 
 ---
 
@@ -206,7 +195,7 @@ npm test         # Ejecutar tests (configurar según necesidad)
 
 ---
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 ### Error: "Error en el servidor" al registrar
 
@@ -234,23 +223,3 @@ npm test         # Ejecutar tests (configurar según necesidad)
   - `DB_NAME`: nombre de la base de datos
 
 ---
-
-## 📝 Próximas Mejoras
-
-- [ ] Agregar más campos a productos (imágenes, reviews)
-- [ ] Implementar órdenes/compras
-- [ ] Chat privado con Socket.IO
-- [ ] Búsqueda y filtros avanzados
-- [ ] Dashboard de vendedor
-- [ ] Autenticación OAuth
-- [ ] Tests automáticos
-
----
-
-## 📄 Licencia
-
-ISC
-
----
-
-**¡Listo para desarrollar! 🚀**
