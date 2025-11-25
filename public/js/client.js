@@ -33,6 +33,6 @@ if (form && socket) {
 
 if (socket) {
   socket.on("chat message", (msg) => {
-    appendMessage(msg);
+    appendMessage(msg); // Unico mensaje
   });
 }
