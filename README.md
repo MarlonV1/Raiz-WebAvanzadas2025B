@@ -157,7 +157,7 @@ Importante: Usa unicamente si necesitas generar un nuevo hash para cambiar contr
 
 ---
 
-## 📁 Estructura de Carpetas
+## Estructura de Carpetas
 
 ```
 /Raiz
