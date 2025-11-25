@@ -1,11 +1,8 @@
 USE [master];
 GO
 
-/* ============================================
-   1) LOGIN: Verificar y recrear
-============================================ */
--- Nota: Si tu servidor tiene políticas de contraseña estrictas, 
--- quizás debas usar una contraseña más larga que 'Grupo7'.
+/* 1) LOGIN: Verificar y recrear */
+
 IF EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'raiz_app_login')
 BEGIN
     DROP LOGIN raiz_app_login;
@@ -18,9 +15,7 @@ WITH PASSWORD = 'Grupo7', CHECK_POLICY = OFF; -- Desactivamos política para evi
 PRINT 'LOGIN creado.';
 GO
 
-/* ============================================
-   2) BASE DE DATOS: Verificar y recrear
-============================================ */
+/* 2) BASE DE DATOS: Verificar y recrear */
 IF DB_ID('RaizDB') IS NOT NULL
 BEGIN
     ALTER DATABASE [RaizDB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -36,9 +31,7 @@ GO
 USE [RaizDB];
 GO
 
-/* ============================================
-   3) USUARIO: Verificar y crear
-============================================ */
+/* 3) USUARIO: Verificar y crear */
 IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'raiz_app_user')
 BEGIN
     DROP USER raiz_app_user;
@@ -53,9 +46,7 @@ GO
 EXEC sp_addrolemember N'db_owner', N'raiz_app_user';
 GO
 
-/* ============================================
-   4) ESQUEMA
-============================================ */
+/* 4) ESQUEMA */
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'app')
 BEGIN
     EXEC('CREATE SCHEMA [app]');
@@ -63,12 +54,10 @@ BEGIN
 END
 GO
 
-/* ============================================
-   5) TABLAS (CORREGIDAS)
-============================================ */
+/* 5) TABLAS (CORREGIDAS) */
 
 -- Tabla Usuarios
--- Corrección: Se agregó columna Id y paréntesis de apertura
+-- Corrección: Se agregó columna Id 
 CREATE TABLE [app].[Users] (
     Id INT IDENTITY(1,1) PRIMARY KEY, -- Clave primaria autoincremental
     Username VARCHAR(50) NOT NULL UNIQUE,
@@ -124,7 +113,7 @@ GO
 
 -- Tabla Auditoría
 CREATE TABLE [app].[AuditLogs](
-    Id INT IDENTITY(1,1) PRIMARY KEY, -- Corregido IdEY por Id y agregado tipo
+    Id INT IDENTITY(1,1) PRIMARY KEY, -- Corregido IdEY por Id 
     Entity VARCHAR(50) NOT NULL,
     Action VARCHAR(50) NOT NULL,
     Data VARCHAR(MAX),
@@ -132,13 +121,10 @@ CREATE TABLE [app].[AuditLogs](
 );
 GO
 
-/* ============================================
-   6) DATOS INICIALES
-============================================ */
--- Insertamos el usuario (El Id se genera solo, no lo ponemos en el INSERT)
+/* 6) DATOS INICIALES */
+-- Insertamos el usuario (El Id se genera solo)
 INSERT INTO [app].[Users] (Username, Email, PasswordHash, FullName, Role)
 VALUES ('admin', 'admin@raiz.com', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxwKc.60', 'Administrador', 'admin'); 
--- Nota: Puse un hash de ejemplo real de bcrypt, el tuyo decía <REPLACE...>
 GO
 
 -- Insertamos el producto vinculado al usuario ID 1 (el admin que acabamos de crear)
@@ -146,9 +132,7 @@ INSERT INTO [app].[Products] (OwnerId, Title, Description, Category, Price, Quan
 VALUES (1, 'Tomates Orgánicos', 'Tomates frescos cultivados sin químicos', 'Hortalizas', 2.50, 100);
 GO
 
-/* ============================================
-   7) ÍNDICES (CORREGIDO)
-============================================ */
+/* 7) ÍNDICES (CORREGIDO) */
 -- Corrección: Se debe especificar la columna entre paréntesis (OwnerId)
 CREATE INDEX IX_Products_OwnerId ON [app].[Products](OwnerId);
 GO
