@@ -1,24 +1,39 @@
 // public/js/client.js
-// Cliente minimal para Socket.IO - chat
-const socket = io();
+// Cliente para Socket.IO - chat (usa window.currentUser si está disponible)
+const socket = (typeof io === 'function') ? io() : null;
 
 const form = document.getElementById("formChat");
 const input = document.getElementById("inputMsg");
 const messages = document.getElementById("messages");
 
-if (form) {
+function appendMessage(msg){
+  if (!messages) return;
+  const li = document.createElement("li");
+  li.textContent = `${msg.user}: ${msg.text}`;
+  messages.appendChild(li);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+if (form && socket) {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const text = input.value && input.value.trim();
     if (!text) return;
-    const msg = { user: "anon", text, timestamp: new Date().toISOString() };
+    // Si no hay usuario, evitar enviar desde cliente (debe loguear)
+    const user = (typeof window !== 'undefined' && window.currentUser) ? window.currentUser : null;
+    if (!user) {
+      alert('Debes iniciar sesión para enviar mensajes.');
+      return;
+    }
+    const msg = { user, text, timestamp: new Date().toISOString() };
     socket.emit("chat message", msg);
     input.value = "";
+    appendMessage(msg); // mostrar localmente
   });
 }
 
-socket.on("chat message", (msg) => {
-  const li = document.createElement("li");
-  li.textContent = `${msg.user}: ${msg.text}`;
-  messages.appendChild(li);
-});
+if (socket) {
+  socket.on("chat message", (msg) => {
+    appendMessage(msg);
+  });
+}

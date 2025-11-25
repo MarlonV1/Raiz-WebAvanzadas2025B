@@ -4,6 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Productos - Raíz</title>
+    <!-- Hoja de estilos centralizada -->
+    <link rel="stylesheet" href="/css/styles.css" />
+
+      nav a:hover {
+        opacity: 0.85;
+      }
+
+      nav span {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 4px;
+      }
     
     <style>
       /* Header - Navbar (page-local) */
@@ -338,7 +350,9 @@
               </span>
             </div>
             <div class="product-price">$<%= product.Price.toFixed(2) %></div>
-            <div class="product-actions <% if (!user || user.id !== product.OwnerId) { %>single<% } %>">
+            <div
+              class="product-actions <% if (!user || user.id !== product.OwnerId) { %>single<% } %>"
+            >
               <a href="/products/<%= product.Id %>" class="btn btn-view">
                   👁️ Ver Detalles
                 </a>
@@ -357,7 +371,14 @@
       <div class="no-products">
         <p>📭 No hay productos disponibles en este momento.</p>
         <% if (user) { %>
-        <p>¿Por qué no <a href="/products/add" style="display: inline; color: #ff9900; text-decoration: underline;">agregas el primero</a>?</p>
+        <p>
+          ¿Por qué no
+          <a
+            href="/products/add"
+            style="display: inline; color: #ff9900; text-decoration: underline"
+            >agregas el primero</a
+          >?
+        </p>
         <% } else { %>
         <p>Inicia sesión para empezar a vender tus productos.</p>
         <a href="/auth/login">Iniciar Sesión</a>
@@ -367,7 +388,9 @@
     </div>
 
     <footer>
-      <p>&copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.</p>
+      <p>
+        &copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.
+      </p>
     </footer>
   </body>
 </html>
