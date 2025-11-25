@@ -2,9 +2,7 @@
 USE [master];
 GO
 
-/* ============================================
-   1) LOGIN: Verificar y recrear
-============================================ */
+/* 1) LOGIN: Verificar y recrear */
 IF EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'raiz_app_login')
 BEGIN
     DROP LOGIN raiz_app_login;
@@ -13,13 +11,11 @@ END
 GO
 
 CREATE LOGIN raiz_app_login
-WITH PASSWORD = 'Grupo7'; -- Cambia esta contraseña segura
+WITH PASSWORD = 'Grupo7'; -- Cambia esta contrasenia segura
 PRINT 'LOGIN creado.';
 GO
 
-/* ============================================
-   2) BASE DE DATOS: Verificar y recrear
-============================================ */
+/* 2) BASE DE DATOS: Verificar y recrear */
 IF DB_ID('RaizDB') IS NOT NULL
 BEGIN
     ALTER DATABASE [RaizDB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -35,9 +31,7 @@ GO
 USE [RaizDB];
 GO
 
-/* ============================================
-   3) USUARIO: Verificar y crear
-============================================ */
+/* 3) USUARIO: Verificar y crear */
 IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'raiz_app_user')
 BEGIN
     DROP USER raiz_app_user;
@@ -52,9 +46,7 @@ GO
 EXEC sp_addrolemember N'db_owner', N'raiz_app_user';
 GO
 
-/* ============================================
-   4) ESQUEMA
-============================================ */
+/* 4) ESQUEMA */
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'app')
 BEGIN
     EXEC('CREATE SCHEMA [app]');
@@ -62,9 +54,7 @@ BEGIN
 END
 GO
 
-/* ============================================
-   5) TABLAS
-============================================ */
+/* 5) TABLAS */
 
 -- Tabla Usuarios
 CREATE TABLE [app].Users PRIMARY KEY,
@@ -116,7 +106,7 @@ CREATE TABLE [app].Messages PRIMARY KEY,
 );
 GO
 
--- Tabla Auditoría
+-- Tabla Auditoria
 CREATE TABLE [app].[AuditLogs](
     IdEY,
     Entity VARCHAR(50) NOT NULL,
@@ -126,18 +116,14 @@ CREATE TABLE [app].[AuditLogs](
 );
 GO
 
-/* ============================================
-   6) DATOS INICIALES
-============================================ */
+/* 6) DATOS INICIALES */
 INSERT INTO [app].[Users] (Username, Email, PasswordHash, FullName, Role)
 VALUES ('admin', 'admin@raiz.com', '<REPLACE_WITH_BCRYPT_HASH>', 'Administrador', 'admin');
 GO
 
 INSERT INTO [app].[Products] (OwnerId, Title, Description, Category, Price, Quantity)
-VALUES (1, 'Tomates Orgánicos', 'Tomates frescos cultivados sin químicos', 'Hortalizas', 2.50, 100);
+VALUES (1, 'Tomates Organicos', 'Tomates frescos cultivados sin quimicos', 'Hortalizas', 2.50, 100);
 GO
 
-/* ============================================
-   7) ÍNDICES
-============================================ */
+/* 7) INDICES*/
 CREATE INDEX IX_Products_OwnerId ON [app].Products;
