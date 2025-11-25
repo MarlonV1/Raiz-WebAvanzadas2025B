@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Editar Producto - Raíz</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+      }
+      header {
+        background: #4caf50;
+        color: white;
+        padding: 20px;
+      }
+      header h1 {
+        margin: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 30px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: bold;
+      }
+      input, textarea, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+      }
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #4caf50;
+        box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin-right: 10px;
+      }
+      .checkbox-group label {
+        margin-bottom: 0;
+      }
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      button, a.btn-cancel {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      a.btn-cancel {
+        background: #9e9e9e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      a.btn-cancel:hover {
+        background: #757575;
+      }
+      .error {
+        color: #d32f2f;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #ffebee;
+        border-left: 4px solid #d32f2f;
+      }
+      .back-link {
+        color: #4caf50;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Raíz - Editar Producto</h1>
+    </header>
+
+    <div class="container">
+      <a href="/products" class="back-link">← Volver a productos</a>
+
+      <h2>Editar: <%= product.Title %></h2>
+
+      <% if (error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/products/<%= product.Id %>/edit">
+        <div class="form-group">
+          <label for="title">Título:</label>
+          <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            required 
+            value="<%= product.Title %>" 
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descripción:</label>
+          <textarea id="description" name="description"><%= product.Description || '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoría:</label>
+          <select id="category" name="category">
+            <option value="Hortalizas" <% if (product.Category === 'Hortalizas') { %>selected<% } %>>Hortalizas</option>
+            <option value="Frutas" <% if (product.Category === 'Frutas') { %>selected<% } %>>Frutas</option>
+            <option value="Lácteos" <% if (product.Category === 'Lácteos') { %>selected<% } %>>Lácteos</option>
+            <option value="Carnes" <% if (product.Category === 'Carnes') { %>selected<% } %>>Carnes</option>
+            <option value="Granos" <% if (product.Category === 'Granos') { %>selected<% } %>>Granos</option>
+            <option value="Otro" <% if (product.Category === 'Otro') { %>selected<% } %>>Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="price">Precio (USD):</label>
+          <input 
+            type="number" 
+            id="price" 
+            name="price" 
+            step="0.01" 
+            required 
+            value="<%= product.Price %>" 
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Cantidad Disponible:</label>
+          <input 
+            type="number" 
+            id="quantity" 
+            name="quantity" 
+            required 
+            value="<%= product.Quantity %>" 
+          />
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input 
+              type="checkbox" 
+              id="isActive" 
+              name="isActive" 
+              <% if (product.IsActive) { %>checked<% } %> 
+            />
+            <label for="isActive">Producto Activo</label>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit">Guardar Cambios</button>
+          <a href="/products" class="btn-cancel">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

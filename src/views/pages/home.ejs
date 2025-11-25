@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raíz - Home</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Raíz - Marketplace agrícola</h1>
+      <nav>
+        <% if (user) { %>
+        <span>Bienvenido, <%= user.username %></span>
+        <a href="/products">Ver Productos</a>
+        <a href="/auth/logout">Cerrar Sesión</a>
+        <% } else { %>
+        <a href="/products">Ver Productos</a>
+        <a href="/auth/login">Iniciar Sesión</a>
+        <a href="/auth/register">Registrarse</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <main>
+      <p>Página principal - plantilla mínima creada para desarrollo.</p>
+
+      <section id="chat">
+        <h2>Chat en tiempo real</h2>
+        <ul id="messages"></ul>
+        <form id="formChat">
+          <input
+            id="inputMsg"
+            autocomplete="off"
+            placeholder="Escribe un mensaje..."
+          />
+          <button>Enviar</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/client.js"></script>
+  </body>
+</html>
