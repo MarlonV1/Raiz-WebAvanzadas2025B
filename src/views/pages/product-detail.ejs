@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= product.Title %> - Raíz</title>
+    
     <style>
       * {
         margin: 0;
@@ -14,26 +15,21 @@
         font-family: Arial, sans-serif;
         background: #f5f5f5;
       }
-      header {
-        background: #4caf50;
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      /* Header styles (local) */
+      header { background: linear-gradient(135deg,#2d5016 0%,#4a7c1e 100%); color: white; padding: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
+      header .container { max-width: 900px; margin: 0 auto; padding: 0 20px; display:flex; align-items:center; justify-content:space-between; }
+      header h1 { margin: 0; font-size: 20px; }
+      header nav { display:flex; gap:18px; align-items:center; }
+      header nav a { color: white; text-decoration: none; font-weight: 600 }
+      header nav a:hover { text-decoration: underline }
+      /* Footer styles */
+      footer {
+        background: linear-gradient(135deg,#2d5016 0%,#3f6a18 100%);
+        color: #fff;
+        padding: 18px 0;
+        margin-top: 40px;
       }
-      header h1 {
-        margin: 0;
-      }
-      nav a {
-        color: white;
-        margin: 0 10px;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      nav a:hover {
-        text-decoration: underline;
-      }
+      footer p { margin: 0; text-align: center; font-size: 14px; opacity: 0.95 }
       .container {
         max-width: 900px;
         margin: 30px auto;
@@ -164,17 +160,19 @@
   </head>
   <body>
     <header>
-      <h1>Raíz - Detalles del Producto</h1>
-      <nav>
-        <% if (user) { %>
-        <span>Hola, <%= user.username %></span>
-        <a href="/products">Productos</a>
-        <a href="/auth/logout">Cerrar Sesión</a>
-        <% } else { %>
-        <a href="/auth/login">Iniciar Sesión</a>
-        <a href="/auth/register">Registrarse</a>
-        <% } %>
-      </nav>
+      <div class="container">
+        <h1>Raíz - Detalles del Producto</h1>
+        <nav>
+          <% if (user) { %>
+          <a href="/auth/profile">Hola, <%= user.username %></a>
+          <a href="/products">Productos</a>
+          <a href="/auth/logout">Cerrar Sesión</a>
+          <% } else { %>
+          <a href="/auth/login">Iniciar Sesión</a>
+          <a href="/auth/register">Registrarse</a>
+          <% } %>
+        </nav>
+      </div>
     </header>
 
     <div class="container">
@@ -240,5 +238,8 @@
         </div>
       </div>
     </div>
+    <footer>
+      <p>&copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.</p>
+    </footer>
   </body>
 </html>

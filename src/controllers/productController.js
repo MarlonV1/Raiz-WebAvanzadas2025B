@@ -30,7 +30,7 @@ exports.getProducts = async (req, res) => {
 
     res.render("pages/products", {
       products: products,
-      user: req.session.user || null,
+      user: req.session ? req.session.user || null : null,
     });
   } catch (err) {
     console.error("Error en getProducts:", err);
@@ -76,7 +76,7 @@ exports.getProductById = async (req, res) => {
 
     res.render("pages/product-detail", {
       product: rows[0],
-      user: req.session.user || null,
+      user: req.session ? req.session.user || null : null,
     });
   } catch (err) {
     console.error("Error en getProductById:", err);
@@ -91,9 +91,9 @@ exports.getProductById = async (req, res) => {
 exports.getAddProductForm = (req, res) => {
   // Verificar que esté autenticado
   if (!req.session.user) {
-    return res.redirect("/login");
+    return res.redirect("/auth/login");
   }
-  res.render("pages/add-product", { user: req.session.user });
+  res.render("pages/add-product", { user: req.session ? req.session.user || null : null, error: null });
 };
 
 /**
@@ -104,7 +104,7 @@ exports.postAddProduct = async (req, res) => {
   try {
     // Verificar autenticación
     if (!req.session.user) {
-      return res.redirect("/login");
+      return res.redirect("/auth/login");
     }
 
     const { title, description, category, price, quantity } = req.body;
@@ -112,7 +112,7 @@ exports.postAddProduct = async (req, res) => {
     // Validaciones básicas
     if (!title || !price || !quantity) {
       return res.render("pages/add-product", {
-        user: req.session.user,
+        user: req.session ? req.session.user || null : null,
         error: "Título, precio y cantidad son requeridos",
       });
     }
@@ -137,7 +137,7 @@ exports.postAddProduct = async (req, res) => {
   } catch (err) {
     console.error("Error en postAddProduct:", err);
     res.render("pages/add-product", {
-      user: req.session.user,
+      user: req.session ? req.session.user || null : null,
       error: "Error al agregar el producto",
     });
   }
@@ -151,7 +151,7 @@ exports.getEditProductForm = async (req, res) => {
   try {
     // Verificar autenticación
     if (!req.session.user) {
-      return res.redirect("/login");
+      return res.redirect("/auth/login");
     }
 
     const { id } = req.params;
@@ -177,11 +177,46 @@ exports.getEditProductForm = async (req, res) => {
 
     res.render("pages/edit-product", {
       product: product,
-      user: req.session.user,
+      user: req.session ? req.session.user || null : null,
+      error: null,
     });
   } catch (err) {
     console.error("Error en getEditProductForm:", err);
     res.status(500).send("Error al obtener el producto");
+  }
+};
+
+/**
+ * POST /:id/delete
+ * Elimina un producto si el usuario es el dueño
+ */
+exports.postDeleteProduct = async (req, res) => {
+  try {
+    if (!req.session.user) return res.redirect("/auth/login");
+
+    const { id } = req.params;
+    const sqlGetText = `SELECT * FROM [app].[Products] WHERE Id = @id`;
+    const rows = await req.db.query(sqlGetText, [
+      { name: "id", type: "int", value: parseInt(id, 10) },
+    ]);
+
+    if (rows.length === 0) {
+      return res.status(404).send("Producto no encontrado");
+    }
+
+    const product = rows[0];
+    if (product.OwnerId !== req.session.user.id) {
+      return res.status(403).send("No tienes permiso para eliminar este producto");
+    }
+
+    const sqlDel = `DELETE FROM [app].[Products] WHERE Id = @id`;
+    await req.db.query(sqlDel, [{ name: "id", type: "int", value: parseInt(id, 10) }]);
+
+    // Redirigir al perfil del usuario
+    res.redirect("/auth/profile");
+  } catch (err) {
+    console.error("Error en postDeleteProduct:", err);
+    res.status(500).send("Error al eliminar el producto");
   }
 };
 
@@ -193,7 +228,7 @@ exports.postEditProduct = async (req, res) => {
   try {
     // Verificar autenticación
     if (!req.session.user) {
-      return res.redirect("/login");
+      return res.redirect("/auth/login");
     }
 
     const { id } = req.params;

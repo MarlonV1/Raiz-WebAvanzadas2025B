@@ -48,6 +48,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Exponer el usuario en las vistas (res.locals.user)
+// Esto permite usar `user` en los templates sin pasar explícitamente en cada render
+app.use((req, res, next) => {
+  try {
+    res.locals.user = req.session ? req.session.user || null : null;
+  } catch (e) {
+    res.locals.user = null;
+  }
+  next();
+});
+
+
 // Rutas básicas
 app.get("/", (req, res) => {
   // Renderiza la página principal (SSR)

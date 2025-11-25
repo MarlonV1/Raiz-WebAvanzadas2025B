@@ -4,7 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Productos - Raíz</title>
+    
     <style>
+      /* Header - Navbar (page-local) */
+      header { background: linear-gradient(135deg,#2d5016 0%,#4a7c1e 100%); color: white; padding: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: sticky; top:0; z-index:1000 }
+      header .navbar { max-width:1400px; margin:0 auto; padding:0 20px; display:flex; justify-content:space-between; align-items:center }
+      header h1 { font-size:28px; font-weight:700 }
+      nav { display:flex; gap:25px; align-items:center }
+      nav a, nav span { color:white; text-decoration:none; font-size:14px; font-weight:500 }
+      nav a:hover { opacity:.85 }
+
       * {
         margin: 0;
         padding: 0;
@@ -17,55 +26,7 @@
         color: #333;
       }
 
-      /* Header */
-      header {
-        background: linear-gradient(135deg, #2d5016 0%, #4a7c1e 100%);
-        color: white;
-        padding: 15px 0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-      }
-
-      header .navbar {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      header h1 {
-        font-size: 28px;
-        font-weight: 700;
-      }
-
-      nav {
-        display: flex;
-        gap: 25px;
-        align-items: center;
-      }
-
-      nav a,
-      nav span {
-        color: white;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        transition: opacity 0.3s;
-      }
-
-      nav a:hover {
-        opacity: 0.85;
-      }
-
-      nav span {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 8px 15px;
-        border-radius: 4px;
-      }
+      /* Header styles are centralized in /public/css/site.css */
 
       /* Container */
       .container {
@@ -243,6 +204,16 @@
         transform: translateY(-2px);
       }
 
+      .btn-addcart {
+        background: #1976d2;
+        color: white;
+      }
+
+      .btn-addcart:hover {
+        background: #1565c0;
+        transform: translateY(-2px);
+      }
+
       /* No Products */
       .no-products {
         text-align: center;
@@ -318,17 +289,15 @@
     </style>
   </head>
   <body>
-    <!-- Header -->
     <header>
       <div class="navbar">
         <h1>🌿 Raíz</h1>
         <nav>
           <% if (user) { %>
-          <span>👤 <%= user.username %></span>
-          <a href="/">🏠 Inicio</a>
-          <a href="/products/add">➕ Agregar Producto</a>
-          <a href="/auth/logout">🚪 Cerrar Sesión</a>
-          <% } else { %>
+            <a href="/auth/profile">👤 <%= user.username %></a>
+            <a href="/">🏠 Inicio</a>
+            <a href="/auth/logout">🚪 Cerrar Sesión</a>
+            <% } else { %>
           <a href="/">🏠 Inicio</a>
           <a href="/auth/login">🔓 Iniciar Sesión</a>
           <a href="/auth/register">📝 Registrarse</a>
@@ -342,7 +311,7 @@
       <div class="header-section">
         <h2>🛍️ Productos Disponibles</h2>
         <% if (user) { %>
-        <a href="/products/add" class="btn-add">➕ Agregar Nuevo Producto</a>
+        <a href="/auth/profile" class="btn-add">👤 Ver Mi Perfil</a>
         <% } %>
       </div>
 
@@ -371,13 +340,14 @@
             <div class="product-price">$<%= product.Price.toFixed(2) %></div>
             <div class="product-actions <% if (!user || user.id !== product.OwnerId) { %>single<% } %>">
               <a href="/products/<%= product.Id %>" class="btn btn-view">
-                👁️ Ver Detalles
-              </a>
-              <% if (user && user.id === product.OwnerId) { %>
-              <a href="/products/<%= product.Id %>/edit" class="btn btn-edit">
-                ✏️ Editar
-              </a>
-              <% } %>
+                  👁️ Ver Detalles
+                </a>
+                <% if (user && user.id === product.OwnerId) { %>
+                <a href="/products/<%= product.Id %>/edit" class="btn btn-edit">
+                  ✏️ Editar
+                </a>
+                <% } %>
+                <button class="btn btn-addcart">🛒 Agregar al carrito</button>
             </div>
           </div>
         </div>
@@ -396,7 +366,6 @@
       <% } %>
     </div>
 
-    <!-- Footer -->
     <footer>
       <p>&copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.</p>
     </footer>

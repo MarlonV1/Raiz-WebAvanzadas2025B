@@ -22,6 +22,15 @@ router.get("/register", (req, res) => {
 // POST /register - Procesar registro
 router.post("/register", authController.postRegister);
 
+// GET /profile - Perfil del usuario
+router.get("/profile", authController.getProfile);
+
+// GET /forgot - Formulario para recuperar contraseña
+router.get("/forgot", authController.getForgot);
+
+// POST /forgot - Procesar solicitud de recuperación (envío de email no implementado)
+router.post("/forgot", authController.postForgot);
+
 // GET /logout - Logout
 router.get("/logout", authController.getLogout);
 
