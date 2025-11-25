@@ -94,10 +94,14 @@
         <div>
           <h2 style="margin:0"> <%= user.fullName || user.username %> </h2>
           <div style="color:#666;margin-top:6px">📧 <%= user.email || 'Sin correo' %> • 🛡️ <%= user.role || 'user' %></div>
-          <form method="POST" action="/auth/profile/photo" enctype="multipart/form-data" style="margin-top:10px">
+          <form id="photoForm" method="POST" action="/auth/profile/photo" enctype="multipart/form-data" style="margin-top:10px">
             <input type="file" name="photo" accept="image/*" />
             <button type="submit" class="btn" style="margin-left:8px">Subir foto</button>
           </form>
+          <div id="photoMessage" style="display:none;margin-top:10px;padding:10px;border-radius:6px;background:#fff3cd;color:#856404;border:1px solid #ffeeba;max-width:420px;">
+            <span id="photoMessageText">Estamos trabajando en la implementación de subir fotos. Pronto estará disponible.</span>
+            <button id="photoMessageClose" style="margin-left:12px;padding:4px 8px;border-radius:4px;border:none;background:#856404;color:white;cursor:pointer;">Cerrar</button>
+          </div>
         </div>
       </div>
 
@@ -132,5 +136,25 @@
     <footer>
       <p>&copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.</p>
     </footer>
+    <script>
+      (function(){
+        var form = document.getElementById('photoForm');
+        var msg = document.getElementById('photoMessage');
+        var closeBtn = document.getElementById('photoMessageClose');
+
+        if (!form || !msg || !closeBtn) return;
+
+        form.addEventListener('submit', function(e){
+          e.preventDefault();
+          msg.style.display = 'block';
+          // Optionally, focus the close button for accessibility
+          closeBtn.focus();
+        });
+
+        closeBtn.addEventListener('click', function(){
+          msg.style.display = 'none';
+        });
+      })();
+    </script>
   </body>
 </html>
