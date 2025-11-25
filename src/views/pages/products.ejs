@@ -10,181 +10,395 @@
         padding: 0;
         box-sizing: border-box;
       }
+
       body {
-        font-family: Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         background: #f5f5f5;
+        color: #333;
       }
+
+      /* Header */
       header {
-        background: #4caf50;
+        background: linear-gradient(135deg, #2d5016 0%, #4a7c1e 100%);
         color: white;
-        padding: 20px;
+        padding: 15px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      header .navbar {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
+
       header h1 {
-        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
       }
-      nav a {
+
+      nav {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+      }
+
+      nav a,
+      nav span {
         color: white;
-        margin: 0 10px;
         text-decoration: none;
-        font-weight: bold;
+        font-size: 14px;
+        font-weight: 500;
+        transition: opacity 0.3s;
       }
+
       nav a:hover {
-        text-decoration: underline;
+        opacity: 0.85;
       }
+
+      nav span {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 4px;
+      }
+
+      /* Container */
       .container {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 30px auto;
         padding: 0 20px;
       }
+
+      .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .header-section h2 {
+        color: #2d5016;
+        font-size: 32px;
+      }
+
       .btn-add {
-        background: #4caf50;
-        color: white;
-        padding: 10px 20px;
+        background: #ff9900;
+        color: #000;
+        padding: 12px 25px;
         border: none;
         border-radius: 4px;
         text-decoration: none;
         display: inline-block;
-        margin-bottom: 20px;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 600;
+        transition: all 0.3s;
       }
+
       .btn-add:hover {
-        background: #45a049;
+        background: #ffb84d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
       }
+
+      /* Products Grid */
       .products-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
       }
+
       .product-card {
         background: white;
         border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
-      }
-      .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      }
-      .product-card h3 {
-        color: #333;
-        margin-bottom: 10px;
-      }
-      .product-card p {
-        color: #666;
-        margin-bottom: 8px;
-        font-size: 14px;
-      }
-      .product-price {
-        color: #4caf50;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .product-category {
-        display: inline-block;
-        background: #e8f5e9;
-        color: #2e7d32;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        margin-bottom: 10px;
-      }
-      .product-actions {
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
         display: flex;
+        flex-direction: column;
+      }
+
+      .product-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(-8px);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 60px;
+        color: #4a7c1e;
+      }
+
+      .product-info {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .product-card h3 {
+        color: #2d5016;
+        margin-bottom: 8px;
+        font-size: 18px;
+        line-height: 1.4;
+        min-height: 50px;
+      }
+
+      .product-seller {
+        color: #ff9900;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .product-description {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 12px;
+        line-height: 1.5;
+        flex-grow: 1;
+      }
+
+      .product-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .product-category {
+        background: #e8f5e9;
+        color: #2d5016;
+        padding: 4px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .product-quantity {
+        color: #666;
+        font-size: 12px;
+      }
+
+      .product-price {
+        color: #ff9900;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 15px;
+      }
+
+      .product-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
       }
+
+      .product-actions.single {
+        grid-template-columns: 1fr;
+      }
+
       .btn {
-        flex: 1;
-        padding: 8px;
+        padding: 10px;
         border: none;
         border-radius: 4px;
         text-align: center;
         text-decoration: none;
         cursor: pointer;
-        font-size: 12px;
-        font-weight: bold;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s;
       }
+
       .btn-view {
-        background: #2196f3;
+        background: #2d5016;
         color: white;
       }
+
       .btn-view:hover {
-        background: #0b7dda;
+        background: #4a7c1e;
+        transform: translateY(-2px);
       }
+
       .btn-edit {
-        background: #ff9800;
-        color: white;
+        background: #ff9900;
+        color: #000;
       }
+
       .btn-edit:hover {
-        background: #e68900;
+        background: #ffb84d;
+        transform: translateY(-2px);
       }
+
+      /* No Products */
       .no-products {
         text-align: center;
-        padding: 40px;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .no-products p {
         color: #666;
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+
+      .no-products a {
+        display: inline-block;
+        background: #4a7c1e;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      .no-products a:hover {
+        background: #2d5016;
+        transform: translateY(-2px);
+      }
+
+      /* Footer */
+      footer {
+        background: #2d5016;
+        color: white;
+        text-align: center;
+        padding: 30px;
+        margin-top: 60px;
+      }
+
+      footer p {
+        font-size: 14px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        header .navbar {
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+
+        nav {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 15px;
+        }
+
+        .header-section {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .products-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 15px;
+        }
+
+        .product-actions {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
+    <!-- Header -->
     <header>
-      <h1>Raíz - Productos</h1>
-      <nav>
-        <% if (user) { %>
-        <span>Hola, <%= user.username %></span>
-        <a href="/products/add">+ Agregar Producto</a>
-        <a href="/auth/logout">Cerrar Sesión</a>
-        <% } else { %>
-        <a href="/auth/login">Iniciar Sesión</a>
-        <a href="/auth/register">Registrarse</a>
-        <% } %>
-      </nav>
+      <div class="navbar">
+        <h1>🌿 Raíz</h1>
+        <nav>
+          <% if (user) { %>
+          <span>👤 <%= user.username %></span>
+          <a href="/">🏠 Inicio</a>
+          <a href="/products/add">➕ Agregar Producto</a>
+          <a href="/auth/logout">🚪 Cerrar Sesión</a>
+          <% } else { %>
+          <a href="/">🏠 Inicio</a>
+          <a href="/auth/login">🔓 Iniciar Sesión</a>
+          <a href="/auth/register">📝 Registrarse</a>
+          <% } %>
+        </nav>
+      </div>
     </header>
 
+    <!-- Main Content -->
     <div class="container">
-      <h2>Productos Disponibles</h2>
+      <div class="header-section">
+        <h2>🛍️ Productos Disponibles</h2>
+        <% if (user) { %>
+        <a href="/products/add" class="btn-add">➕ Agregar Nuevo Producto</a>
+        <% } %>
+      </div>
 
-      <% if (user) { %>
-      <a href="/products/add" class="btn-add">+ Agregar Nuevo Producto</a>
-      <% } %> <% if (products && products.length > 0) { %>
+      <% if (products && products.length > 0) { %>
       <div class="products-grid">
         <% products.forEach(product => { %>
         <div class="product-card">
-          <h3><%= product.Title %></h3>
-          <p>
-            <strong>Vendedor:</strong> <%= product.OwnerName || 'Desconocido' %>
-          </p>
-          <p>
-            <%= product.Description ? product.Description.substring(0, 100) +
-            '...' : 'Sin descripción' %>
-          </p>
-          <div class="product-category">
-            <%= product.Category || 'Sin categoría' %>
-          </div>
-          <div class="product-price">$<%= product.Price.toFixed(2) %></div>
-          <p><strong>Disponibles:</strong> <%= product.Quantity %> unidades</p>
-          <div class="product-actions">
-            <a href="/products/<%= product.Id %>" class="btn btn-view"
-              >Ver Detalles</a
-            >
-            <% if (user && user.id === product.OwnerId) { %>
-            <a href="/products/<%= product.Id %>/edit" class="btn btn-edit"
-              >Editar</a
-            >
-            <% } %>
+          <div class="product-image">🥬</div>
+          <div class="product-info">
+            <h3><%= product.Title %></h3>
+            <div class="product-seller">
+              🌾 <%= product.OwnerName || 'Desconocido' %>
+            </div>
+            <p class="product-description">
+              <%= product.Description ? product.Description.substring(0, 80) +
+              '...' : 'Sin descripción' %>
+            </p>
+            <div class="product-meta">
+              <span class="product-category">
+                <%= product.Category || 'Sin categoría' %>
+              </span>
+              <span class="product-quantity">
+                📦 <%= product.Quantity %> en stock
+              </span>
+            </div>
+            <div class="product-price">$<%= product.Price.toFixed(2) %></div>
+            <div class="product-actions <% if (!user || user.id !== product.OwnerId) { %>single<% } %>">
+              <a href="/products/<%= product.Id %>" class="btn btn-view">
+                👁️ Ver Detalles
+              </a>
+              <% if (user && user.id === product.OwnerId) { %>
+              <a href="/products/<%= product.Id %>/edit" class="btn btn-edit">
+                ✏️ Editar
+              </a>
+              <% } %>
+            </div>
           </div>
         </div>
         <% }); %>
       </div>
       <% } else { %>
       <div class="no-products">
-        <p>No hay productos disponibles en este momento.</p>
+        <p>📭 No hay productos disponibles en este momento.</p>
+        <% if (user) { %>
+        <p>¿Por qué no <a href="/products/add" style="display: inline; color: #ff9900; text-decoration: underline;">agregas el primero</a>?</p>
+        <% } else { %>
+        <p>Inicia sesión para empezar a vender tus productos.</p>
+        <a href="/auth/login">Iniciar Sesión</a>
+        <% } %>
       </div>
       <% } %>
     </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.</p>
+    </footer>
   </body>
 </html>

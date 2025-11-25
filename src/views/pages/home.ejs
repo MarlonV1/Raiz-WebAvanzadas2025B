@@ -3,42 +3,528 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Raíz - Home</title>
-    <link rel="stylesheet" href="/css/styles.css" />
+    <title>Raíz - Marketplace Agrícola</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+
+      /* Header - Navbar */
+      header {
+        background: linear-gradient(135deg, #2d5016 0%, #4a7c1e 100%);
+        color: white;
+        padding: 15px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      header .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      header nav {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+      }
+
+      header nav a,
+      header nav span {
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: opacity 0.3s;
+        cursor: pointer;
+      }
+
+      header nav a:hover {
+        opacity: 0.85;
+      }
+
+      header nav span {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 4px;
+      }
+
+      /* Main Container */
+      main {
+        min-height: calc(100vh - 200px);
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Hero Banner */
+      .hero {
+        background: linear-gradient(135deg, #4a7c1e 0%, #2d5016 100%);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+        margin-bottom: 50px;
+        border-radius: 8px;
+        margin-top: 30px;
+      }
+
+      .hero h2 {
+        font-size: 48px;
+        margin-bottom: 15px;
+        font-weight: 700;
+      }
+
+      .hero p {
+        font-size: 18px;
+        margin-bottom: 30px;
+        opacity: 0.95;
+      }
+
+      .hero .cta-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .cta-button {
+        padding: 12px 30px;
+        font-size: 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .cta-button.primary {
+        background-color: #ff9900;
+        color: #000;
+      }
+
+      .cta-button.primary:hover {
+        background-color: #ffb84d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+      }
+
+      .cta-button.secondary {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+      }
+
+      .cta-button.secondary:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      /* Features Grid */
+      .features-section {
+        margin: 60px 0;
+      }
+
+      .features-section h3 {
+        font-size: 32px;
+        margin-bottom: 40px;
+        text-align: center;
+        color: #2d5016;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+      }
+
+      .feature-card {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: all 0.3s;
+      }
+
+      .feature-card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-4px);
+      }
+
+      .feature-card .icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+
+      .feature-card h4 {
+        color: #2d5016;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+
+      .feature-card p {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Chat Section */
+      .chat-section {
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 60px;
+      }
+
+      .chat-section h3 {
+        color: #2d5016;
+        margin-bottom: 25px;
+        font-size: 24px;
+      }
+
+      .chat-unauthenticated {
+        text-align: center;
+        padding: 40px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 4px solid #ff9900;
+      }
+
+      .chat-unauthenticated h4 {
+        color: #2d5016;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .chat-unauthenticated p {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 15px;
+      }
+
+      .chat-unauthenticated .auth-links {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .chat-unauthenticated a {
+        padding: 12px 25px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+
+      .chat-unauthenticated .login-btn {
+        background-color: #2d5016;
+        color: white;
+      }
+
+      .chat-unauthenticated .login-btn:hover {
+        background-color: #4a7c1e;
+        transform: translateY(-2px);
+      }
+
+      .chat-unauthenticated .register-btn {
+        background-color: #ff9900;
+        color: #000;
+      }
+
+      .chat-unauthenticated .register-btn:hover {
+        background-color: #ffb84d;
+        transform: translateY(-2px);
+      }
+
+      #chat {
+        display: none;
+      }
+
+      #chat.active {
+        display: block;
+      }
+
+      #messages {
+        list-style: none;
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+      }
+
+      #messages li {
+        margin-bottom: 12px;
+        padding: 10px;
+        background: white;
+        border-radius: 4px;
+        font-size: 14px;
+        border-left: 3px solid #4a7c1e;
+      }
+
+      #formChat {
+        display: flex;
+        gap: 10px;
+      }
+
+      #inputMsg {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      #inputMsg:focus {
+        outline: none;
+        border-color: #4a7c1e;
+        box-shadow: 0 0 0 3px rgba(74, 124, 30, 0.1);
+      }
+
+      #formChat button {
+        padding: 12px 25px;
+        background: #4a7c1e;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      #formChat button:hover {
+        background: #2d5016;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 124, 30, 0.3);
+      }
+
+      /* Footer */
+      footer {
+        background: #2d5016;
+        color: white;
+        text-align: center;
+        padding: 30px;
+        margin-top: 60px;
+      }
+
+      footer p {
+        font-size: 14px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        header .container {
+          flex-direction: column;
+          gap: 20px;
+          text-align: center;
+        }
+
+        header h1 {
+          font-size: 22px;
+        }
+
+        header nav {
+          flex-wrap: wrap;
+          gap: 15px;
+          justify-content: center;
+        }
+
+        .hero h2 {
+          font-size: 32px;
+        }
+
+        .hero p {
+          font-size: 16px;
+        }
+
+        .cta-button {
+          padding: 10px 20px;
+          font-size: 14px;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- Header/Navbar -->
     <header>
-      <h1>Raíz - Marketplace agrícola</h1>
-      <nav>
-        <% if (user) { %>
-        <span>Bienvenido, <%= user.username %></span>
-        <a href="/products">Ver Productos</a>
-        <a href="/auth/logout">Cerrar Sesión</a>
-        <% } else { %>
-        <a href="/products">Ver Productos</a>
-        <a href="/auth/login">Iniciar Sesión</a>
-        <a href="/auth/register">Registrarse</a>
-        <% } %>
-      </nav>
+      <div class="container">
+        <h1>🌿 Raíz</h1>
+        <nav>
+          <% if (user) { %>
+          <span>👤 <%= user.username %></span>
+          <a href="/products">🛒 Productos</a>
+          <a href="/auth/logout">🚪 Cerrar Sesión</a>
+          <% } else { %>
+          <a href="/products">🛒 Productos</a>
+          <a href="/auth/login">🔓 Iniciar Sesión</a>
+          <a href="/auth/register">📝 Registrarse</a>
+          <% } %>
+        </nav>
+      </div>
     </header>
 
+    <!-- Main Content -->
     <main>
-      <p>Página principal - plantilla mínima creada para desarrollo.</p>
+      <div class="container">
+        <!-- Hero Banner -->
+        <section class="hero">
+          <h2>Bienvenido a Raíz</h2>
+          <p>
+            El marketplace agrícola más confiable para productos frescos y de
+            calidad
+          </p>
+          <div class="cta-buttons">
+            <a href="/products" class="cta-button primary"
+              >🛍️ Explorar Productos</a
+            >
+            <% if (!user) { %>
+            <a href="/auth/register" class="cta-button secondary"
+              >Crear Cuenta Gratis</a
+            >
+            <% } else { %>
+            <a href="/products/add" class="cta-button secondary"
+              >📤 Vender Producto</a
+            >
+            <% } %>
+          </div>
+        </section>
 
-      <section id="chat">
-        <h2>Chat en tiempo real</h2>
-        <ul id="messages"></ul>
-        <form id="formChat">
-          <input
-            id="inputMsg"
-            autocomplete="off"
-            placeholder="Escribe un mensaje..."
-          />
-          <button>Enviar</button>
-        </form>
-      </section>
+        <!-- Features Section -->
+        <section class="features-section">
+          <h3>¿Por qué elegir Raíz?</h3>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="icon">✅</div>
+              <h4>Productos Frescos</h4>
+              <p>
+                Directamente de los agricultores a tu hogar. Garantizamos
+                calidad y frescura.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">🚚</div>
+              <h4>Envíos Rápidos</h4>
+              <p>
+                Entrega oportuna en toda la región. Síguele el rastro a tu
+                pedido en tiempo real.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">💰</div>
+              <h4>Precios Competitivos</h4>
+              <p>
+                Sin intermediarios. Los mejores precios para productores y
+                consumidores.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">🤝</div>
+              <h4>Comunidad Confiable</h4>
+              <p>
+                Sistema de calificaciones y reseñas. Comercio justo y
+                transparente.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">🌱</div>
+              <h4>Sostenible</h4>
+              <p>
+                Apoyamos la agricultura local y prácticas sustentables para el
+                medio ambiente.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="icon">📱</div>
+              <h4>Acceso Fácil</h4>
+              <p>
+                Plataforma intuitiva y accesible desde cualquier dispositivo.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Chat Section -->
+        <section class="chat-section">
+          <h3>💬 Centro de Comunicación</h3>
+
+          <% if (!user) { %>
+          <!-- Chat Bloqueado para No Autenticados -->
+          <div class="chat-unauthenticated">
+            <h4>Únete a la comunidad Raíz</h4>
+            <p>
+              Para participar en nuestro chat en tiempo real y conectar con
+              otros usuarios, necesitas crear una cuenta o iniciar sesión.
+            </p>
+            <div class="auth-links">
+              <a href="/auth/login" class="login-btn">Iniciar Sesión</a>
+              <a href="/auth/register" class="register-btn">Crear Cuenta</a>
+            </div>
+          </div>
+          <% } else { %>
+          <!-- Chat Activo para Usuarios Autenticados -->
+          <div id="chat" class="active">
+            <h4>Conversación en Tiempo Real</h4>
+            <ul id="messages"></ul>
+            <form id="formChat">
+              <input
+                id="inputMsg"
+                type="text"
+                autocomplete="off"
+                placeholder="Escribe un mensaje..."
+                required
+              />
+              <button type="submit">Enviar</button>
+            </form>
+          </div>
+          <% } %>
+        </section>
+      </div>
     </main>
 
+    <!-- Footer -->
+    <footer>
+      <p>
+        &copy; 2025 Raíz - Marketplace Agrícola. Todos los derechos reservados.
+      </p>
+    </footer>
+
+    <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/client.js"></script>
   </body>
