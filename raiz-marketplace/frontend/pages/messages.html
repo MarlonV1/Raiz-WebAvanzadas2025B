@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensajes - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .messages-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      height: calc(100vh - 200px);
+      min-height: 500px;
+    }
+    .conversations-list {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow-y: auto;
+      border: 1px solid var(--gray-100);
+    }
+    .conversations-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--gray-100);
+      background: var(--gray-50);
+    }
+    .conversation-item {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .conversation-item:hover,
+    .conversation-item.active {
+      background: var(--primary-50);
+    }
+    .conversation-name {
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .conversation-preview {
+      font-size: 13px;
+      color: var(--gray-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .conversation-time {
+      font-size: 11px;
+      color: var(--gray-400);
+    }
+    .chat-container {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--gray-100);
+    }
+    .chat-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--gray-100);
+      background: var(--gray-50);
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .message {
+      max-width: 70%;
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+    }
+    .message-sent {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .message-received {
+      align-self: flex-start;
+      background: var(--gray-100);
+      color: var(--gray-800);
+      border-bottom-left-radius: 4px;
+    }
+    .message-time {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 6px;
+    }
+    .chat-input {
+      padding: 20px 24px;
+      border-top: 1px solid var(--gray-100);
+      display: flex;
+      gap: 12px;
+      background: var(--gray-50);
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 14px 24px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      font-size: 15px;
+      transition: all var(--transition);
+    }
+    .chat-input input:focus {
+      border-color: var(--primary-500);
+      outline: none;
+      box-shadow: 0 0 0 4px var(--primary-100);
+    }
+    .chat-input button {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--transition);
+    }
+    .chat-input button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .no-chat-selected {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--gray-400);
+      font-size: 16px;
+    }
+    @media (max-width: 768px) {
+      .messages-container {
+        grid-template-columns: 1fr;
+      }
+      .chat-container.hidden-mobile {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-header" style="padding: 20px 0;">
+      <h1>💬 Mensajes</h1>
+    </div>
+
+    <div id="error-container" style="display: none;"></div>
+
+    <div class="messages-container">
+      <!-- Conversations List -->
+      <div class="conversations-list">
+        <div class="conversations-header">
+          <strong>Conversaciones</strong>
+        </div>
+        <div id="conversations-container">
+          <div class="loading" style="padding: 20px;">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-container" id="chat-container">
+        <div class="no-chat-selected" id="no-chat">
+          <div style="text-align: center;">
+            <div style="font-size: 60px;">💬</div>
+            <p>Selecciona una conversación para ver los mensajes</p>
+          </div>
+        </div>
+        
+        <div id="chat-active" style="display: none; height: 100%; display: flex; flex-direction: column;">
+          <div class="chat-header">
+            <strong id="chat-user-name">Usuario</strong>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <form class="chat-input" id="message-form">
+            <input type="text" id="message-input" placeholder="Escribe un mensaje..." required>
+            <button type="submit">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let currentUserId = null;
+    let selectedUserId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.getUser();
+      if (!user) {
+        window.location.href = '/pages/login.html';
+        return;
+      }
+      currentUserId = user.id;
+      
+      // Check URL params for direct message
+      const params = Utils.getUrlParams();
+      if (params.user) {
+        selectedUserId = params.user;
+      }
+      
+      await loadConversations();
+    });
+
+    async function loadConversations() {
+      const container = document.getElementById('conversations-container');
+      
+      try {
+        const conversations = await MessagesAPI.getConversations();
+        
+        if (!conversations || conversations.length === 0) {
+          container.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: var(--text-light);">
+              No tienes conversaciones aún
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = conversations.map(conv => `
+          <div class="conversation-item ${conv.user_id === selectedUserId ? 'active' : ''}" 
+               data-user-id="${conv.user_id}">
+            <div class="conversation-name">${conv.user_name || 'Usuario'}</div>
+            <div class="conversation-preview">${conv.last_message || ''}</div>
+            <div class="conversation-time">${Utils.formatDate(conv.last_message_at)}</div>
+          </div>
+        `).join('');
+
+        // Click handlers
+        container.querySelectorAll('.conversation-item').forEach(item => {
+          item.addEventListener('click', () => {
+            document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            selectedUserId = item.dataset.userId;
+            loadChat();
+          });
+        });
+
+        // Load selected chat
+        if (selectedUserId) {
+          loadChat();
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        Utils.showError('Error al cargar conversaciones', 'error-container');
+      }
+    }
+
+    async function loadChat() {
+      if (!selectedUserId) return;
+
+      document.getElementById('no-chat').style.display = 'none';
+      document.getElementById('chat-active').style.display = 'flex';
+
+      const messagesContainer = document.getElementById('chat-messages');
+      messagesContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+
+      try {
+        const data = await MessagesAPI.getWithUser(selectedUserId);
+        const messages = data.messages || [];
+        
+        if (messages.length === 0) {
+          messagesContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-light); padding: 40px;">
+              Inicia la conversación
+            </div>
+          `;
+        } else {
+          messagesContainer.innerHTML = messages.map(msg => `
+            <div class="message ${msg.from_user_id === currentUserId ? 'message-sent' : 'message-received'}">
+              <div>${msg.message_text}</div>
+              <div class="message-time">${new Date(msg.sent_at).toLocaleTimeString()}</div>
+            </div>
+          `).join('');
+          
+          // Scroll to bottom
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        messagesContainer.innerHTML = '<div style="color: red; padding: 20px;">Error al cargar mensajes</div>';
+      }
+    }
+
+    document.getElementById('message-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!selectedUserId) return;
+      
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      input.value = '';
+      
+      try {
+        await MessagesAPI.send(selectedUserId, message);
+        await loadChat();
+      } catch (error) {
+        console.error('Error:', error);
+        Utils.showError('Error al enviar mensaje', 'error-container');
+      }
+    });
+
+    // Refresh messages periodically
+    setInterval(() => {
+      if (selectedUserId) {
+        loadChat();
+      }
+    }, 10000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # FRONTEND - Nginx serving static files
+  # ===========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: raiz-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - API_GATEWAY_URL=http://localhost:${API_GATEWAY_PORT:-8000}
+    depends_on:
+      - api-gateway
+    networks:
+      - raiz-network
+    restart: unless-stopped
+
+  # ===========================================
+  # API GATEWAY - Entry point for all requests
+  # ===========================================
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: raiz-api-gateway
+    ports:
+      - "${API_GATEWAY_PORT:-8000}:8000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=8000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - PROFILE_SERVICE_URL=http://profile-service:8001
+      - PRODUCT_SERVICE_URL=http://product-service:8002
+      - ORDER_SERVICE_URL=http://order-service:8003
+      - MESSAGE_SERVICE_URL=http://message-service:8004
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-60000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+      - CIRCUIT_BREAKER_TIMEOUT=${CIRCUIT_BREAKER_TIMEOUT:-10000}
+      - CIRCUIT_BREAKER_ERROR_THRESHOLD=${CIRCUIT_BREAKER_ERROR_THRESHOLD:-5}
+      - CIRCUIT_BREAKER_RESET_TIMEOUT=${CIRCUIT_BREAKER_RESET_TIMEOUT:-30000}
+    depends_on:
+      - profile-service
+      - product-service
+      - order-service
+      - message-service
+    networks:
+      - raiz-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # PROFILE SERVICE - User profiles management
+  # ===========================================
+  profile-service:
+    build:
+      context: ./services/profile-service
+      dockerfile: Dockerfile
+    container_name: raiz-profile-service
+    ports:
+      - "${PROFILE_SERVICE_PORT:-8001}:8001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=8001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SERVICE_NAME=profile-service
+    networks:
+      - raiz-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # PRODUCT SERVICE - Products catalog
+  # ===========================================
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: raiz-product-service
+    ports:
+      - "${PRODUCT_SERVICE_PORT:-8002}:8002"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=8002
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SERVICE_NAME=product-service
+    networks:
+      - raiz-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # ORDER SERVICE - Orders management
+  # ===========================================
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: raiz-order-service
+    ports:
+      - "${ORDER_SERVICE_PORT:-8003}:8003"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=8003
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SERVICE_NAME=order-service
+    networks:
+      - raiz-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # MESSAGE SERVICE - Messaging between users
+  # ===========================================
+  message-service:
+    build:
+      context: ./services/message-service
+      dockerfile: Dockerfile
+    container_name: raiz-message-service
+    ports:
+      - "${MESSAGE_SERVICE_PORT:-8004}:8004"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=8004
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SERVICE_NAME=message-service
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    networks:
+      - raiz-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# ===========================================
+# NETWORKS
+# ===========================================
+networks:
+  raiz-network:
+    driver: bridge
+    name: raiz-marketplace-network
+
+# ===========================================
+# VOLUMES (para persistencia si es necesario)
+# ===========================================
+volumes:
+  logs:
+    driver: local

@@ -1,0 +1,23 @@
+{
+  "name": "raiz-order-service",
+  "version": "1.0.0",
+  "description": "Microservicio de órdenes - Raíz Marketplace",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": ["microservice", "orders", "raiz", "marketplace"],
+  "author": "Raíz Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.1"
+  }
+}

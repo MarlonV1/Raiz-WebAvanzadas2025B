@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raíz - Marketplace de Productos Agrícolas</title>
+  <meta name="description" content="Conectamos agricultores locales con consumidores urbanos. Productos frescos, trazables y sin intermediarios.">
+  
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/" class="active">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">🌾 100% Productos Locales</div>
+        <h1>Del Campo <span class="hero-highlight">a Tu Mesa</span></h1>
+        <p>Conectamos agricultores locales con consumidores y negocios urbanos. Productos frescos, trazables y sin intermediarios.</p>
+        <div class="cta-buttons">
+          <a href="/pages/products.html" class="cta-button primary">
+            Explorar Productos
+            <span class="cta-icon">→</span>
+          </a>
+          <a href="/pages/register.html" class="cta-button secondary">Vender como Agricultor</a>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <span></span>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Beneficios</span>
+          <h2>¿Por qué elegir Raíz?</h2>
+          <p>Una experiencia de compra directa, transparente y sostenible</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🌾</div>
+            <h3>Directo del Productor</h3>
+            <p>Sin intermediarios. Compra directamente de agricultores locales y apoya la economía rural.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🥬</div>
+            <h3>Productos Frescos</h3>
+            <p>Frutas, verduras y más, cosechados con calidad y entregados en el menor tiempo posible.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📍</div>
+            <h3>Trazabilidad Total</h3>
+            <p>Conoce el origen de cada producto, desde la semilla hasta tu mesa.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>Comunicación Directa</h3>
+            <p>Chatea con los productores, haz preguntas y negocia directamente.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-section container">
+      <h2>Categorías Populares</h2>
+      <div class="categories-grid">
+        <a href="/pages/products.html?category=frutas" class="category-card">
+          <span class="emoji">🍎</span>
+          <span>Frutas</span>
+        </a>
+        <a href="/pages/products.html?category=verduras" class="category-card">
+          <span class="emoji">🥬</span>
+          <span>Verduras</span>
+        </a>
+        <a href="/pages/products.html?category=hortalizas" class="category-card">
+          <span class="emoji">🥕</span>
+          <span>Hortalizas</span>
+        </a>
+        <a href="/pages/products.html?category=legumbres" class="category-card">
+          <span class="emoji">🫘</span>
+          <span>Legumbres</span>
+        </a>
+        <a href="/pages/products.html?category=lacteos" class="category-card">
+          <span class="emoji">🧀</span>
+          <span>Lácteos</span>
+        </a>
+        <a href="/pages/products.html?category=huevos" class="category-card">
+          <span class="emoji">🥚</span>
+          <span>Huevos</span>
+        </a>
+        <a href="/pages/products.html?category=miel" class="category-card">
+          <span class="emoji">🍯</span>
+          <span>Miel</span>
+        </a>
+        <a href="/pages/products.html?category=hierbas" class="category-card">
+          <span class="emoji">🌿</span>
+          <span>Hierbas</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="how-it-works container">
+      <h2>¿Cómo Funciona?</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Explora</h3>
+          <p>Navega por nuestro catálogo de productos frescos de agricultores locales.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Conecta</h3>
+          <p>Contacta directamente con el productor si tienes dudas o pedidos especiales.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Ordena</h3>
+          <p>Realiza tu pedido de forma segura y recibe productos frescos.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025. Productos frescos, agricultores locales.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook">📘</a>
+            <a href="#" aria-label="Instagram">📸</a>
+            <a href="#" aria-label="Twitter">🐦</a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+          <a href="#">Categorías</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Contacto</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

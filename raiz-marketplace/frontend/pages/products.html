@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html" class="active">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="container">
+        <h1>🥕 Productos Frescos</h1>
+        <div class="filters-bar">
+          <input type="text" id="search-input" class="search-input" placeholder="Buscar productos...">
+          <select id="category-filter" class="filter-select">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="sort-filter" class="filter-select">
+            <option value="created_at-desc">Más recientes</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="title-asc">Nombre A-Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="container">
+      <div id="products-container" class="products-grid">
+        <!-- Products will be loaded here -->
+      </div>
+      
+      <!-- Pagination -->
+      <div id="pagination" class="pagination" style="display: none;">
+        <button id="prev-page" class="btn-view">← Anterior</button>
+        <span id="page-info"></span>
+        <button id="next-page" class="btn-view">Siguiente →</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // Estado de la página
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentFilters = {};
+
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', async () => {
+      initFilters();
+      loadUrlParams();
+      await loadProducts();
+    });
+
+    // Inicializar filtros
+    function initFilters() {
+      const categorySelect = document.getElementById('category-filter');
+      CONFIG.CATEGORIES.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = `${cat.emoji} ${cat.name}`;
+        categorySelect.appendChild(option);
+      });
+
+      // Event listeners
+      document.getElementById('search-input').addEventListener('input', debounce(applyFilters, 500));
+      document.getElementById('category-filter').addEventListener('change', applyFilters);
+      document.getElementById('sort-filter').addEventListener('change', applyFilters);
+      document.getElementById('prev-page').addEventListener('click', () => changePage(-1));
+      document.getElementById('next-page').addEventListener('click', () => changePage(1));
+    }
+
+    // Cargar parámetros de URL
+    function loadUrlParams() {
+      const params = Utils.getUrlParams();
+      if (params.category) {
+        document.getElementById('category-filter').value = params.category;
+        currentFilters.category = params.category;
+      }
+      if (params.search) {
+        document.getElementById('search-input').value = params.search;
+        currentFilters.search = params.search;
+      }
+    }
+
+    // Aplicar filtros
+    function applyFilters() {
+      currentFilters = {
+        search: document.getElementById('search-input').value,
+        category: document.getElementById('category-filter').value
+      };
+      
+      const sort = document.getElementById('sort-filter').value;
+      if (sort) {
+        const [sortBy, sortOrder] = sort.split('-');
+        currentFilters.sort_by = sortBy;
+        currentFilters.sort_order = sortOrder;
+      }
+      
+      currentPage = 1;
+      loadProducts();
+    }
+
+    // Cambiar página
+    function changePage(delta) {
+      const newPage = currentPage + delta;
+      if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        loadProducts();
+      }
+    }
+
+    // Cargar productos
+    async function loadProducts() {
+      const container = document.getElementById('products-container');
+      Utils.showLoading('products-container');
+
+      try {
+        const params = {
+          page: currentPage,
+          limit: 12,
+          ...currentFilters
+        };
+
+        const response = await ProductsAPI.getAll(params);
+        const { products, pagination } = response;
+
+        if (!products || products.length === 0) {
+          Utils.showEmpty('products-container', 'No se encontraron productos', '🥕');
+          document.getElementById('pagination').style.display = 'none';
+          return;
+        }
+
+        // Renderizar productos
+        container.innerHTML = products.map(p => Utils.productCard(p)).join('');
+
+        // Actualizar paginación
+        totalPages = pagination.totalPages;
+        const paginationEl = document.getElementById('pagination');
+        paginationEl.style.display = totalPages > 1 ? 'flex' : 'none';
+        document.getElementById('page-info').textContent = `Página ${currentPage} de ${totalPages}`;
+        document.getElementById('prev-page').disabled = currentPage === 1;
+        document.getElementById('next-page').disabled = currentPage === totalPages;
+
+      } catch (error) {
+        console.error('Error loading products:', error);
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">❌</div>
+            <h3>Error al cargar productos</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Debounce helper
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+  </script>
+
+  <style>
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 40px 0;
+    }
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</body>
+</html>

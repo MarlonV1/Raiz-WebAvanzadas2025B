@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Órdenes - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .orders-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .tab-btn {
+      padding: 14px 28px;
+      border: none;
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all var(--transition);
+      color: var(--gray-600);
+    }
+    .tab-btn:hover {
+      background: var(--gray-200);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      color: var(--white);
+    }
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .order-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--gray-100);
+      transition: all var(--transition);
+    }
+    .order-card:hover {
+      box-shadow: var(--shadow-lg);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .order-id {
+      font-weight: 600;
+      color: var(--gray-800);
+      font-size: 14px;
+    }
+    .order-status {
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .order-body {
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .order-product {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .order-product-emoji {
+      font-size: 48px;
+    }
+    .order-total {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-600);
+    }
+    .order-actions {
+      display: flex;
+      gap: 12px;
+      padding: 0 24px 24px;
+    }
+    .btn-small {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all var(--transition);
+    }
+    .btn-cancel {
+      background: var(--error);
+      color: white;
+    }
+    .btn-cancel:hover {
+      background: var(--error-dark);
+    }
+    .btn-confirm {
+      background: var(--success);
+      color: white;
+    }
+    .btn-confirm:hover {
+      background: var(--success-dark);
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <h1>📦 Mis Órdenes</h1>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="orders-tabs">
+        <button class="tab-btn active" data-tab="purchases">Mis Compras</button>
+        <button class="tab-btn" data-tab="sales">Mis Ventas</button>
+      </div>
+
+      <div id="error-container" style="display: none;"></div>
+      
+      <div id="orders-container" class="orders-list">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando órdenes...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let currentTab = 'purchases';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Verificar autenticación
+      const user = await Auth.getUser();
+      if (!user) {
+        window.location.href = '/pages/login.html';
+        return;
+      }
+
+      // Tabs
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentTab = btn.dataset.tab;
+          loadOrders();
+        });
+      });
+
+      loadOrders();
+    });
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-container');
+      container.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando...</p>
+        </div>
+      `;
+
+      try {
+        let orders;
+        if (currentTab === 'purchases') {
+          const response = await OrdersAPI.getMyOrders();
+          orders = response.orders;
+        } else {
+          const response = await OrdersAPI.getMySales();
+          orders = response.sales;
+        }
+
+        if (!orders || orders.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="icon">📭</div>
+              <h3>${currentTab === 'purchases' ? 'No tienes compras aún' : 'No tienes ventas aún'}</h3>
+              <p><a href="/pages/products.html">Explorar productos</a></p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(order => renderOrderCard(order)).join('');
+        
+        // Agregar event listeners para acciones
+        container.querySelectorAll('.btn-cancel').forEach(btn => {
+          btn.addEventListener('click', () => cancelOrder(btn.dataset.id));
+        });
+        
+        container.querySelectorAll('.btn-status').forEach(btn => {
+          btn.addEventListener('click', () => updateStatus(btn.dataset.id, btn.dataset.status));
+        });
+
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        Utils.showError('Error al cargar órdenes: ' + error.message, 'error-container');
+      }
+    }
+
+    function renderOrderCard(order) {
+      const status = CONFIG.ORDER_STATUS[order.status] || { label: order.status, color: '#6c757d' };
+      const isSales = currentTab === 'sales';
+      
+      return `
+        <div class="order-card">
+          <div class="order-header">
+            <span class="order-id">Orden #${order.id.slice(0, 8)}</span>
+            <span class="order-status" style="background: ${status.color}; color: white;">
+              ${status.label}
+            </span>
+          </div>
+          <div class="order-body">
+            <div class="order-product">
+              <div class="order-product-emoji">📦</div>
+              <div>
+                <strong>Producto ID: ${order.product_id.slice(0, 8)}...</strong>
+                <br>
+                <span style="color: var(--text-light);">Cantidad: ${order.quantity}</span>
+                <br>
+                <span style="color: var(--text-light); font-size: 12px;">
+                  ${Utils.formatDate(order.created_at)}
+                </span>
+              </div>
+            </div>
+            <div class="order-total">${Utils.formatPrice(order.total)}</div>
+          </div>
+          <div class="order-actions">
+            ${renderOrderActions(order, isSales)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrderActions(order, isSales) {
+      if (order.status === 'cancelled' || order.status === 'delivered') {
+        return '';
+      }
+      
+      let actions = '';
+      
+      if (isSales) {
+        // Acciones del vendedor
+        if (order.status === 'pending') {
+          actions += `<button class="btn-small btn-confirm btn-status" data-id="${order.id}" data-status="confirmed">Confirmar</button>`;
+        }
+        if (order.status === 'confirmed') {
+          actions += `<button class="btn-small btn-status" data-id="${order.id}" data-status="shipped" style="background: #007bff; color: white;">Marcar Enviado</button>`;
+        }
+        if (order.status === 'shipped') {
+          actions += `<button class="btn-small btn-confirm btn-status" data-id="${order.id}" data-status="delivered">Marcar Entregado</button>`;
+        }
+      }
+      
+      // Cancelar (disponible para ambos si está pendiente o confirmada)
+      if (['pending', 'confirmed'].includes(order.status)) {
+        actions += `<button class="btn-small btn-cancel" data-id="${order.id}">Cancelar</button>`;
+      }
+      
+      return actions;
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm('¿Estás seguro de cancelar esta orden?')) return;
+      
+      try {
+        await OrdersAPI.cancel(orderId);
+        loadOrders();
+      } catch (error) {
+        Utils.showError('Error al cancelar: ' + error.message, 'error-container');
+      }
+    }
+
+    async function updateStatus(orderId, status) {
+      try {
+        await OrdersAPI.updateStatus(orderId, status);
+        loadOrders();
+      } catch (error) {
+        Utils.showError('Error al actualizar: ' + error.message, 'error-container');
+      }
+    }
+  </script>
+</body>
+</html>

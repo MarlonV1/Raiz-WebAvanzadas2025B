@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Iniciar Sesión</h1>
+      <p class="subtitle">Accede a tu cuenta de Raíz</p>
+
+      <div id="error-container" style="display: none;"></div>
+      <div id="success-container" style="display: none;"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input type="email" id="email" name="email" required placeholder="tu@email.com">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" required placeholder="••••••••">
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary">Iniciar Sesión</button>
+      </form>
+
+      <p class="auth-link">
+        ¿No tienes cuenta? <a href="/pages/register.html">Regístrate aquí</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // Verificar si ya está autenticado
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.getUser();
+      if (user) {
+        window.location.href = '/';
+      }
+    });
+
+    // Manejar envío del formulario
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submit-btn');
+
+      // Deshabilitar botón
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Iniciando sesión...';
+
+      // Ocultar mensajes anteriores
+      document.getElementById('error-container').style.display = 'none';
+      document.getElementById('success-container').style.display = 'none';
+
+      try {
+        const { user } = await Auth.signIn(email, password);
+        
+        // Verificar si el email está confirmado
+        if (user && !user.email_confirmed_at) {
+          // Email no confirmado, redirigir a verificación
+          localStorage.setItem('pendingVerificationEmail', email);
+          await supabaseClient.auth.signOut();
+          window.location.href = '/pages/verify-email.html';
+          return;
+        }
+        
+        Utils.showSuccess('¡Inicio de sesión exitoso! Redirigiendo...', 'success-container');
+        
+        // Redirigir después de 1 segundo
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+
+      } catch (error) {
+        console.error('Login error:', error);
+        
+        let errorMessage = 'Error al iniciar sesión';
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Credenciales inválidas. Verifica tu email y contraseña.';
+        } else if (error.message.includes('Email not confirmed')) {
+          // Guardar email y redirigir a verificación
+          localStorage.setItem('pendingVerificationEmail', email);
+          window.location.href = '/pages/verify-email.html';
+          return;
+        } else {
+          errorMessage = error.message;
+        }
+        
+        Utils.showError(errorMessage, 'error-container');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Iniciar Sesión';
+      }
+    });
+  </script>
+</body>
+</html>

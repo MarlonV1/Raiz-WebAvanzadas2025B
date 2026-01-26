@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="auth-page">
+    <div class="auth-card">
+      <h1>Crear Cuenta</h1>
+      <p class="subtitle">Únete a la comunidad de Raíz</p>
+
+      <div id="error-container" style="display: none;"></div>
+      <div id="success-container" style="display: none;"></div>
+
+      <form id="register-form">
+        <div class="form-group">
+          <label for="fullName">Nombre Completo</label>
+          <input type="text" id="fullName" name="fullName" required placeholder="Juan Pérez">
+        </div>
+
+        <div class="form-group">
+          <label for="username">Nombre de Usuario</label>
+          <input type="text" id="username" name="username" required placeholder="juanperez" minlength="3" maxlength="30">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input type="email" id="email" name="email" required placeholder="tu@email.com">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" required placeholder="Mínimo 6 caracteres" minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmar Contraseña</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Repite tu contraseña">
+        </div>
+
+        <div class="form-group">
+          <label for="role">¿Cómo quieres usar Raíz?</label>
+          <select id="role" name="role" required>
+            <option value="user">Comprador - Quiero comprar productos</option>
+            <option value="farmer">Agricultor - Quiero vender mis productos</option>
+          </select>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary">Crear Cuenta</button>
+      </form>
+
+      <p class="auth-link">
+        ¿Ya tienes cuenta? <a href="/pages/login.html">Inicia sesión aquí</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // Verificar si ya está autenticado
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.getUser();
+      if (user) {
+        window.location.href = '/';
+      }
+    });
+
+    // Manejar envío del formulario
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fullName = document.getElementById('fullName').value;
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const role = document.getElementById('role').value;
+      const submitBtn = document.getElementById('submit-btn');
+
+      // Validaciones
+      if (password !== confirmPassword) {
+        Utils.showError('Las contraseñas no coinciden', 'error-container');
+        return;
+      }
+
+      if (password.length < 6) {
+        Utils.showError('La contraseña debe tener al menos 6 caracteres', 'error-container');
+        return;
+      }
+
+      // Deshabilitar botón
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando cuenta...';
+
+      // Ocultar mensajes anteriores
+      document.getElementById('error-container').style.display = 'none';
+      document.getElementById('success-container').style.display = 'none';
+
+      try {
+        await Auth.signUp(email, password, {
+          full_name: fullName,
+          username: username,
+          role: role
+        });
+        
+        // Guardar email para mostrar en página de verificación
+        localStorage.setItem('pendingVerificationEmail', email);
+        
+        // Redirigir a página de verificación
+        window.location.href = '/pages/verify-email.html';
+
+      } catch (error) {
+        console.error('Register error:', error);
+        
+        let errorMessage = 'Error al crear la cuenta';
+        if (error.message.includes('already registered')) {
+          errorMessage = 'Este correo electrónico ya está registrado.';
+        } else if (error.message.includes('password')) {
+          errorMessage = 'La contraseña no cumple con los requisitos mínimos.';
+        } else {
+          errorMessage = error.message;
+        }
+        
+        Utils.showError(errorMessage, 'error-container');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Crear Cuenta';
+      }
+    });
+  </script>
+</body>
+</html>

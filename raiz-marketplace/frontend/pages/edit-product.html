@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Producto - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .product-form {
+      max-width: 640px;
+      margin: 48px auto;
+      background: var(--white);
+      padding: 48px;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--gray-100);
+    }
+    .product-form h1 {
+      color: var(--primary-600);
+      margin-bottom: 32px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: var(--gray-50);
+      border-radius: var(--radius);
+    }
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--gray-300);
+      transition: var(--transition);
+      border-radius: var(--radius-full);
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: var(--transition);
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+    }
+    input:checked + .toggle-slider {
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+    @media (max-width: 500px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .product-form {
+        padding: 32px 24px;
+        margin: 24px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+        <div id="nav-auth"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="product-form">
+      <h1>✏️ Editar Producto</h1>
+      
+      <div id="error-container" style="display: none;"></div>
+      <div id="success-container" style="display: none;"></div>
+      
+      <div id="loading-container">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando producto...</p>
+        </div>
+      </div>
+
+      <form id="product-form" style="display: none;">
+        <div class="toggle-container">
+          <label class="toggle-switch">
+            <input type="checkbox" id="is_active" name="is_active">
+            <span class="toggle-slider"></span>
+          </label>
+          <span>Producto activo (visible en el marketplace)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="title">Título del Producto *</label>
+          <input type="text" id="title" name="title" required 
+                 placeholder="Ej: Tomates Orgánicos Frescos" 
+                 minlength="3" maxlength="200">
+        </div>
+
+        <div class="form-group">
+          <label for="description">Descripción</label>
+          <textarea id="description" name="description" rows="4"
+                    placeholder="Describe tu producto..." 
+                    maxlength="2000"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoría *</label>
+          <select id="category" name="category" required>
+            <option value="">Selecciona una categoría</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Precio (USD) *</label>
+            <input type="number" id="price" name="price" required 
+                   min="0" step="0.01" placeholder="0.00">
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">Cantidad Disponible *</label>
+            <input type="number" id="quantity" name="quantity" required 
+                   min="0" placeholder="10">
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary">Guardar Cambios</button>
+      </form>
+
+      <p style="text-align: center; margin-top: 20px;">
+        <a href="/pages/my-products.html">← Volver a Mis Productos</a>
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let productId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.getUser();
+      if (!user) {
+        window.location.href = '/pages/login.html';
+        return;
+      }
+
+      const params = Utils.getUrlParams();
+      if (!params.id) {
+        window.location.href = '/pages/my-products.html';
+        return;
+      }
+
+      productId = params.id;
+
+      // Llenar categorías
+      const categorySelect = document.getElementById('category');
+      CONFIG.CATEGORIES.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = `${cat.emoji} ${cat.name}`;
+        categorySelect.appendChild(option);
+      });
+
+      await loadProduct();
+    });
+
+    async function loadProduct() {
+      try {
+        const product = await ProductsAPI.getById(productId);
+        
+        document.getElementById('title').value = product.title;
+        document.getElementById('description').value = product.description || '';
+        document.getElementById('category').value = product.category;
+        document.getElementById('price').value = product.price;
+        document.getElementById('quantity').value = product.quantity;
+        document.getElementById('is_active').checked = product.is_active;
+
+        document.getElementById('loading-container').style.display = 'none';
+        document.getElementById('product-form').style.display = 'block';
+
+      } catch (error) {
+        console.error('Error:', error);
+        Utils.showError('Error al cargar el producto: ' + error.message, 'error-container');
+        document.getElementById('loading-container').style.display = 'none';
+      }
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando...';
+
+      document.getElementById('error-container').style.display = 'none';
+      document.getElementById('success-container').style.display = 'none';
+
+      try {
+        const updates = {
+          title: document.getElementById('title').value,
+          description: document.getElementById('description').value,
+          category: document.getElementById('category').value,
+          price: parseFloat(document.getElementById('price').value),
+          quantity: parseInt(document.getElementById('quantity').value),
+          is_active: document.getElementById('is_active').checked
+        };
+
+        await ProductsAPI.update(productId, updates);
+        
+        Utils.showSuccess('¡Producto actualizado exitosamente!', 'success-container');
+        
+        setTimeout(() => {
+          window.location.href = '/pages/my-products.html';
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error:', error);
+        Utils.showError(error.message || 'Error al actualizar el producto', 'error-container');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Guardar Cambios';
+      }
+    });
+  </script>
+</body>
+</html>

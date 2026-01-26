@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Correo - Raíz Marketplace</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .verify-container {
+      max-width: 520px;
+      margin: 4rem auto;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .verify-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: 3.5rem 2.5rem;
+      box-shadow: var(--shadow-xl);
+      border: 1px solid var(--gray-100);
+    }
+
+    .verify-icon {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-20px); }
+      60% { transform: translateY(-10px); }
+    }
+
+    .verify-title {
+      color: var(--primary-600);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .verify-text {
+      color: var(--gray-500);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    .verify-email {
+      background: var(--primary-50);
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      color: var(--primary-600);
+      display: inline-block;
+      margin-bottom: 2rem;
+      border: 1px solid var(--primary-100);
+    }
+
+    .verify-steps {
+      text-align: left;
+      background: var(--gray-50);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      margin-bottom: 2rem;
+    }
+
+    .verify-steps h4 {
+      color: var(--primary-600);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .verify-steps ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .verify-steps li {
+      margin-bottom: 0.5rem;
+      color: var(--gray-700);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .btn-resend {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-resend:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-resend:disabled {
+      background: var(--gray-300);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-login {
+      padding: 1rem 2rem;
+      background: transparent;
+      color: var(--primary-600);
+      border: 2px solid var(--primary-500);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+
+    .btn-login:hover {
+      background: var(--primary-600);
+      border-color: var(--primary-600);
+      color: white;
+    }
+
+    .countdown {
+      font-size: 0.9rem;
+      color: var(--gray-500);
+      margin-top: 0.5rem;
+    }
+
+    .status-checking {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--primary-50);
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      color: var(--primary-600);
+    }
+
+    .spinner-small {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--primary-500);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .verified-success {
+      background: var(--success-light);
+      color: var(--success-dark);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      margin-bottom: 1.5rem;
+    }
+
+    .verified-success h3 {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <a href="/" class="logo">🌱 Raíz</a>
+      <nav id="nav-menu">
+        <a href="/">Inicio</a>
+        <a href="/pages/products.html">Productos</a>
+        <a href="/pages/forum.html">Foro</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="verify-container">
+      <div class="verify-card">
+        <!-- Estado: Esperando verificación -->
+        <div id="waiting-verification">
+          <div class="verify-icon">📧</div>
+          <h1 class="verify-title">Verifica tu correo electrónico</h1>
+          
+          <p class="verify-text">
+            Hemos enviado un enlace de verificación a:
+          </p>
+          
+          <div class="verify-email" id="user-email">correo@ejemplo.com</div>
+          
+          <div class="status-checking" id="status-checking">
+            <div class="spinner-small"></div>
+            <span>Verificando estado automáticamente...</span>
+          </div>
+
+          <div class="verify-steps">
+            <h4>📋 Pasos para verificar:</h4>
+            <ol>
+              <li>Abre tu bandeja de entrada</li>
+              <li>Busca el correo de <strong>Raíz Marketplace</strong></li>
+              <li>Haz clic en el enlace de verificación</li>
+              <li>¡Listo! Serás redirigido automáticamente</li>
+            </ol>
+          </div>
+
+          <div class="btn-group">
+            <button id="resend-btn" class="btn-resend" onclick="resendEmail()">
+              📤 Reenviar correo de verificación
+            </button>
+            <div class="countdown" id="countdown"></div>
+            
+            <a href="/pages/login.html" class="btn-login">
+              Ya verifiqué mi correo - Iniciar sesión
+            </a>
+          </div>
+        </div>
+
+        <!-- Estado: Verificado exitosamente -->
+        <div id="verified-success" style="display: none;">
+          <div class="verify-icon">✅</div>
+          <h1 class="verify-title">¡Correo verificado!</h1>
+          
+          <div class="verified-success">
+            <h3>🎉 Bienvenido a Raíz Marketplace</h3>
+            <p>Tu cuenta ha sido verificada correctamente.</p>
+          </div>
+
+          <p class="verify-text">
+            Serás redirigido automáticamente en <span id="redirect-countdown">3</span> segundos...
+          </p>
+
+          <a href="/pages/login.html" class="btn-resend" style="text-decoration: none; display: inline-block;">
+            Ir a iniciar sesión ahora
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo">🌱 Raíz</a>
+          <p>Conectando el campo con la ciudad desde 2025.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Explorar</h4>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html">Foro</a>
+        </div>
+        <div class="footer-section">
+          <h4>Soporte</h4>
+          <a href="#">Ayuda</a>
+          <a href="#">Términos</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    let resendCooldown = 0;
+    let checkInterval = null;
+    const pendingEmail = localStorage.getItem('pendingVerificationEmail');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mostrar el email pendiente
+      if (pendingEmail) {
+        document.getElementById('user-email').textContent = pendingEmail;
+      }
+
+      // Verificar si viene de un enlace de confirmación
+      checkForConfirmation();
+      
+      // Iniciar verificación periódica del estado
+      startStatusCheck();
+    });
+
+    async function checkForConfirmation() {
+      // Supabase redirige con tokens en el hash
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+
+      if (accessToken && type === 'signup') {
+        // El usuario acaba de confirmar su correo
+        showVerifiedSuccess();
+        localStorage.removeItem('pendingVerificationEmail');
+      }
+    }
+
+    function startStatusCheck() {
+      // Verificar cada 3 segundos si el correo fue confirmado
+      checkInterval = setInterval(async () => {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          
+          if (session?.user?.email_confirmed_at) {
+            // El correo fue confirmado
+            clearInterval(checkInterval);
+            showVerifiedSuccess();
+            localStorage.removeItem('pendingVerificationEmail');
+          }
+        } catch (error) {
+          console.error('Error checking status:', error);
+        }
+      }, 3000);
+    }
+
+    function showVerifiedSuccess() {
+      document.getElementById('waiting-verification').style.display = 'none';
+      document.getElementById('verified-success').style.display = 'block';
+      
+      // Countdown para redirección
+      let countdown = 3;
+      const countdownEl = document.getElementById('redirect-countdown');
+      
+      const redirectInterval = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        
+        if (countdown <= 0) {
+          clearInterval(redirectInterval);
+          window.location.href = '/pages/login.html';
+        }
+      }, 1000);
+    }
+
+    async function resendEmail() {
+      if (resendCooldown > 0) return;
+
+      const btn = document.getElementById('resend-btn');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      try {
+        const email = pendingEmail || document.getElementById('user-email').textContent;
+        
+        const { error } = await supabaseClient.auth.resend({
+          type: 'signup',
+          email: email
+        });
+
+        if (error) throw error;
+
+        btn.textContent = '✓ Correo reenviado';
+        
+        // Iniciar cooldown de 60 segundos
+        resendCooldown = 60;
+        updateCooldown();
+
+      } catch (error) {
+        console.error('Error resending:', error);
+        btn.textContent = 'Error - Intentar de nuevo';
+        btn.disabled = false;
+      }
+    }
+
+    function updateCooldown() {
+      const btn = document.getElementById('resend-btn');
+      const countdownEl = document.getElementById('countdown');
+
+      if (resendCooldown > 0) {
+        countdownEl.textContent = `Puedes reenviar en ${resendCooldown} segundos`;
+        btn.disabled = true;
+        resendCooldown--;
+        setTimeout(updateCooldown, 1000);
+      } else {
+        countdownEl.textContent = '';
+        btn.disabled = false;
+        btn.textContent = '📤 Reenviar correo de verificación';
+      }
+    }
+
+    // Limpiar intervalo al salir de la página
+    window.addEventListener('beforeunload', () => {
+      if (checkInterval) clearInterval(checkInterval);
+    });
+  </script>
+</body>
+</html>

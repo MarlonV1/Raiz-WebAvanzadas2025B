@@ -1,0 +1,24 @@
+{
+  "name": "raiz-api-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway para Raíz Marketplace - Punto de entrada único con Circuit Breaker",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": ["api-gateway", "microservices", "raiz", "marketplace"],
+  "author": "Raíz Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.1"
+  }
+}
