@@ -78,7 +78,7 @@ router.use(requireAuth);
  *         description: No autenticado
  */
 router.get('/',
-  query('status').optional().isIn(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']),
+  query('status').optional().isIn(['pending', 'confirmed', 'shipped', 'received', 'cancelled']),
   validate,
   orderController.getMyOrders
 );
@@ -211,7 +211,7 @@ router.post('/',
 router.put('/:id/status',
   param('id').isUUID().withMessage('ID de orden inválido'),
   body('status')
-    .isIn(['confirmed', 'shipped', 'delivered', 'cancelled'])
+    .isIn(['confirmed', 'shipped', 'received', 'cancelled'])
     .withMessage('Estado inválido'),
   validate,
   orderController.updateOrderStatus

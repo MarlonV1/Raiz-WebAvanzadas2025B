@@ -122,7 +122,7 @@
         grid-template-columns: 1fr;
       }
       }
-    }
+    
   </style>
 </head>
 <body>
@@ -311,7 +311,7 @@
           avatar_url: document.getElementById('avatarUrl').value || null
         };
 
-        await ProfilesAPI.update(updates);
+        await ProfilesAPI.updateMyProfile(updates);
         
         Utils.showSuccess('¡Perfil actualizado exitosamente!', 'success-container');
         await loadProfile();

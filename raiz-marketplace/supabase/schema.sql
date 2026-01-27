@@ -80,7 +80,7 @@ create table "order".orders (
   unit_price numeric(12,2) not null,
   total numeric(12,2) not null,
   status text not null default 'pending'
-    check (status in ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
+    check (status in ('pending', 'confirmed', 'shipped', 'received', 'cancelled')),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

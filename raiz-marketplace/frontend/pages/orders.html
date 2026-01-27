@@ -288,7 +288,7 @@
     }
 
     function renderOrderActions(order, isSales) {
-      if (order.status === 'cancelled' || order.status === 'delivered') {
+      if (order.status === 'cancelled' || order.status === 'received') {
         return '';
       }
       
@@ -302,8 +302,11 @@
         if (order.status === 'confirmed') {
           actions += `<button class="btn-small btn-status" data-id="${order.id}" data-status="shipped" style="background: #007bff; color: white;">Marcar Enviado</button>`;
         }
+        // El vendedor ya no puede marcar como recibido, solo el comprador
+      } else {
+        // Acciones del comprador: marcar como recibido cuando está enviado
         if (order.status === 'shipped') {
-          actions += `<button class="btn-small btn-confirm btn-status" data-id="${order.id}" data-status="delivered">Marcar Entregado</button>`;
+          actions += `<button class="btn-small btn-confirm btn-status" data-id="${order.id}" data-status="received">Marcar Recibido</button>`;
         }
       }
       

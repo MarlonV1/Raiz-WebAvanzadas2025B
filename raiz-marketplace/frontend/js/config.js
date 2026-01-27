@@ -33,7 +33,7 @@ const CONFIG = {
     pending: { label: 'Pendiente', color: '#ffc107' },
     confirmed: { label: 'Confirmado', color: '#17a2b8' },
     shipped: { label: 'Enviado', color: '#007bff' },
-    delivered: { label: 'Entregado', color: '#28a745' },
+    received: { label: 'Recibido', color: '#28a745' },
     cancelled: { label: 'Cancelado', color: '#dc3545' }
   }
 };

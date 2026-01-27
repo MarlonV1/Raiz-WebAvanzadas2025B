@@ -21,7 +21,7 @@ const ORDER_STATUS = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   SHIPPED: 'shipped',
-  DELIVERED: 'delivered',
+  RECEIVED: 'received',  // El comprador marca como recibido
   CANCELLED: 'cancelled'
 };
 
@@ -243,7 +243,9 @@ export const createOrder = async (req, res, next) => {
 };
 
 /**
- * Actualiza el estado de una orden (solo vendedor)
+ * Actualiza el estado de una orden
+ * - Vendedor puede: pending->confirmed, confirmed->shipped, cualquiera->cancelled
+ * - Comprador puede: shipped->received (marcar como recibido)
  */
 export const updateOrderStatus = async (req, res, next) => {
   try {
@@ -263,7 +265,7 @@ export const updateOrderStatus = async (req, res, next) => {
       return res.status(404).json({ error: 'Orden no encontrada' });
     }
 
-    // Verificar que el usuario sea el vendedor
+    // Obtener información del producto para saber quién es el vendedor
     const { data: product } = await supabase
       .schema('product')
       .from('products')
@@ -271,26 +273,46 @@ export const updateOrderStatus = async (req, res, next) => {
       .eq('id', order.product_id)
       .single();
 
-    if (product?.owner_id !== userId) {
-      return res.status(403).json({
-        error: 'Solo el vendedor puede actualizar el estado'
-      });
-    }
+    const isSeller = product?.owner_id === userId;
+    const isBuyer = order.buyer_id === userId;
 
-    // Validar transición de estado
-    const validTransitions = {
-      [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
-      [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.CANCELLED],
-      [ORDER_STATUS.SHIPPED]: [ORDER_STATUS.DELIVERED],
-      [ORDER_STATUS.DELIVERED]: [],
-      [ORDER_STATUS.CANCELLED]: []
-    };
+    // Si el usuario quiere marcar como "received", debe ser el comprador
+    if (status === ORDER_STATUS.RECEIVED) {
+      if (!isBuyer) {
+        return res.status(403).json({
+          error: 'Solo el comprador puede marcar la orden como recibida'
+        });
+      }
+      // Solo se puede marcar recibido si está en estado "shipped"
+      if (order.status !== ORDER_STATUS.SHIPPED) {
+        return res.status(400).json({
+          error: 'Solo puedes marcar como recibido cuando la orden está enviada',
+          currentStatus: order.status
+        });
+      }
+    } else {
+      // Para otros estados, solo el vendedor puede actualizar
+      if (!isSeller) {
+        return res.status(403).json({
+          error: 'Solo el vendedor puede actualizar este estado'
+        });
+      }
 
-    if (!validTransitions[order.status].includes(status)) {
-      return res.status(400).json({
-        error: `No se puede cambiar de ${order.status} a ${status}`,
-        validTransitions: validTransitions[order.status]
-      });
+      // Validar transición de estado para el vendedor
+      const validTransitions = {
+        [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.SHIPPED, ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.SHIPPED]: [ORDER_STATUS.CANCELLED],
+        [ORDER_STATUS.RECEIVED]: [],
+        [ORDER_STATUS.CANCELLED]: []
+      };
+
+      if (!validTransitions[order.status]?.includes(status)) {
+        return res.status(400).json({
+          error: `No se puede cambiar de ${order.status} a ${status}`,
+          validTransitions: validTransitions[order.status] || []
+        });
+      }
     }
 
     // Actualizar estado
@@ -308,7 +330,8 @@ export const updateOrderStatus = async (req, res, next) => {
       orderId: id,
       previousStatus: order.status,
       newStatus: status,
-      updatedBy: userId
+      updatedBy: userId,
+      updatedByRole: isBuyer ? 'buyer' : 'seller'
     });
 
     res.json(data);
