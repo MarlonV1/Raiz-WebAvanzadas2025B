@@ -16,12 +16,20 @@
  */
 
 import { logger } from '../utils/logger.js';
+import { circuitBreakerState, circuitBreakerFailures } from '../utils/prometheus.js';
 
 // Estados del Circuit Breaker
 const STATES = {
   CLOSED: 'CLOSED',
   OPEN: 'OPEN',
   HALF_OPEN: 'HALF_OPEN'
+};
+
+// Mapeo de estados a valores numéricos para Prometheus
+const STATE_VALUES = {
+  CLOSED: 0,
+  OPEN: 1,
+  HALF_OPEN: 2
 };
 
 // Almacén de Circuit Breakers por servicio
@@ -51,6 +59,17 @@ class CircuitBreaker {
     };
     
     logger.info(`Circuit Breaker creado para ${serviceName}: ${JSON.stringify(this.options)}`);
+    
+    // Inicializar métrica de Prometheus
+    this.updatePrometheusState();
+  }
+
+  /**
+   * Actualiza el estado en Prometheus
+   */
+  updatePrometheusState() {
+    circuitBreakerState.set({ service: this.serviceName }, STATE_VALUES[this.state]);
+    logger.debug(`[${this.serviceName}] Prometheus actualizado: estado=${this.state} (${STATE_VALUES[this.state]})`);
   }
 
   /**
@@ -69,6 +88,7 @@ class CircuitBreaker {
           this.state = STATES.HALF_OPEN;
           this.successCount = 0;
           logger.info(`[${this.serviceName}] Circuit Breaker: OPEN → HALF_OPEN`);
+          this.updatePrometheusState();
           return true;
         }
         return false;
@@ -94,6 +114,7 @@ class CircuitBreaker {
         this.failureCount = 0;
         this.successCount = 0;
         logger.info(`[${this.serviceName}] Circuit Breaker: HALF_OPEN → CLOSED (Recuperado)`);
+        this.updatePrometheusState();
       }
     } else if (this.state === STATES.CLOSED) {
       // Resetear contador de fallos tras un éxito
@@ -107,18 +128,24 @@ class CircuitBreaker {
   recordFailure() {
     this.failureCount++;
     this.lastFailureTime = Date.now();
+    
+    // Incrementar contador de fallos en Prometheus
+    circuitBreakerFailures.inc({ service: this.serviceName });
+    logger.warn(`[${this.serviceName}] Fallo registrado (${this.failureCount}/${this.options.failureThreshold})`);
 
     if (this.state === STATES.HALF_OPEN) {
       // Volver a abrir el circuito
       this.state = STATES.OPEN;
       this.nextAttemptTime = Date.now() + this.options.resetTimeout;
       logger.warn(`[${this.serviceName}] Circuit Breaker: HALF_OPEN → OPEN (Fallo en prueba)`);
+      this.updatePrometheusState();
     } else if (this.state === STATES.CLOSED && 
                this.failureCount >= this.options.failureThreshold) {
       // Abrir el circuito
       this.state = STATES.OPEN;
       this.nextAttemptTime = Date.now() + this.options.resetTimeout;
       logger.error(`[${this.serviceName}] Circuit Breaker: CLOSED → OPEN (Umbral alcanzado: ${this.failureCount} fallos)`);
+      this.updatePrometheusState();
     }
   }
 
@@ -165,19 +192,8 @@ export const circuitBreakerMiddleware = (serviceName) => {
       });
     }
 
-    // Adjuntar el circuit breaker a la request para uso posterior
+    // Adjuntar el circuit breaker a la request para uso en el proxy
     req.circuitBreaker = cb;
-    
-    // Interceptar la respuesta para registrar éxito/fallo
-    const originalSend = res.send;
-    res.send = function(body) {
-      if (res.statusCode >= 500) {
-        cb.recordFailure();
-      } else {
-        cb.recordSuccess();
-      }
-      return originalSend.call(this, body);
-    };
 
     next();
   };

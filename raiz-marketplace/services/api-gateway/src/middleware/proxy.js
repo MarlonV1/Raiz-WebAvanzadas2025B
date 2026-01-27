@@ -7,6 +7,7 @@
 
 import axios from 'axios';
 import { logger } from '../utils/logger.js';
+import { circuitBreakerFailures } from '../utils/prometheus.js';
 
 /**
  * Crea un middleware de proxy para un servicio específico
@@ -44,6 +45,15 @@ export const proxyMiddleware = (serviceUrl) => {
       // Realizar la petición al microservicio
       const response = await axios(config);
 
+      // Registrar éxito o fallo en el Circuit Breaker según el status
+      if (req.circuitBreaker) {
+        if (response.status >= 500) {
+          req.circuitBreaker.recordFailure();
+        } else {
+          req.circuitBreaker.recordSuccess();
+        }
+      }
+
       // Copiar headers relevantes de la respuesta
       const headersToForward = [
         'x-total-count',
@@ -62,6 +72,10 @@ export const proxyMiddleware = (serviceUrl) => {
       res.status(response.status).json(response.data);
 
     } catch (error) {
+      // Registrar el fallo en el Circuit Breaker si está disponible
+      if (req.circuitBreaker) {
+        req.circuitBreaker.recordFailure();
+      }
       handleProxyError(error, req, res, serviceUrl);
     }
   };
@@ -71,7 +85,9 @@ export const proxyMiddleware = (serviceUrl) => {
  * Maneja errores del proxy
  */
 function handleProxyError(error, req, res, serviceUrl) {
-  logger.error(`Proxy error [${serviceUrl}]: ${error.message}`);
+  const serviceName = getServiceName(serviceUrl);
+  logger.error(`[${serviceName}] Proxy error: ${error.message} (code: ${error.code})`);
+  logger.error(`[${serviceName}] Estado Circuit Breaker: ${req.circuitBreaker?.state || 'N/A'}, Fallos: ${req.circuitBreaker?.failureCount || 0}`);
 
   // Error de timeout
   if (error.code === 'ECONNABORTED') {

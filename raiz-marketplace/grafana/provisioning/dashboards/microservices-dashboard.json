@@ -19,224 +19,268 @@
   "links": [],
   "panels": [
     {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "expr": "rate(http_requests_total[5m])",
-          "refId": "A"
-        }
-      ],
-      "title": "📊 Request Rate (últimos 5 minutos)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
-          "legendFormat": "P95",
-          "refId": "A"
-        },
-        {
-          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
-          "legendFormat": "P99",
-          "refId": "B"
-        }
-      ],
-      "title": "⏱️  Latencia (P95/P99)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "expr": "rate(http_requests_total{status_code=~\"5..\"}[5m])",
-          "legendFormat": "Error Rate",
-          "refId": "A"
-        }
-      ],
-      "title": "❌ Error Rate (5xx)",
-      "type": "timeseries"
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🔄 Estado Circuit Breaker por Microservicio",
+      "type": "row"
     },
     {
       "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
+          "color": { "mode": "thresholds" },
           "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "CLOSED",
-                  "color": "green"
-                },
-                "1": {
-                  "text": "OPEN",
-                  "color": "red"
-                },
-                "2": {
-                  "text": "HALF_OPEN",
-                  "color": "yellow"
-                }
-              },
-              "type": "value"
-            }
-          ]
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "id": 5,
-      "options": {
-        "orientation": "auto",
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "8.0.0",
-      "targets": [
-        {
-          "expr": "circuit_breaker_state",
-          "refId": "A"
-        }
-      ],
-      "title": "🔄 Circuit Breaker Status",
-      "type": "gauge"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 16
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
+            { "options": { "0": { "text": "✅ CLOSED", "color": "green" }, "1": { "text": "❌ OPEN", "color": "red" }, "2": { "text": "⚠️ HALF_OPEN", "color": "yellow" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1.5 }, { "color": "red", "value": 0.5 } ] }
         }
       },
-      "targets": [
-        {
-          "expr": "websocket_connections",
-          "refId": "A"
-        }
-      ],
-      "title": "🌐 WebSocket Connections",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 10,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "circuit_breaker_state{service=\"profile-service\"}", "legendFormat": "Profile", "refId": "A" }],
+      "title": "👤 Profile Service",
       "type": "stat"
     },
     {
       "datasource": "Prometheus",
       "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "✅ CLOSED", "color": "green" }, "1": { "text": "❌ OPEN", "color": "red" }, "2": { "text": "⚠️ HALF_OPEN", "color": "yellow" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1.5 }, { "color": "red", "value": 0.5 } ] }
         }
       },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 11,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "circuit_breaker_state{service=\"product-service\"}", "legendFormat": "Product", "refId": "A" }],
+      "title": "📦 Product Service",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "✅ CLOSED", "color": "green" }, "1": { "text": "❌ OPEN", "color": "red" }, "2": { "text": "⚠️ HALF_OPEN", "color": "yellow" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1.5 }, { "color": "red", "value": 0.5 } ] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 12,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "circuit_breaker_state{service=\"order-service\"}", "legendFormat": "Order", "refId": "A" }],
+      "title": "🛒 Order Service",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "text": "✅ CLOSED", "color": "green" }, "1": { "text": "❌ OPEN", "color": "red" }, "2": { "text": "⚠️ HALF_OPEN", "color": "yellow" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1.5 }, { "color": "red", "value": 0.5 } ] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 13,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "circuit_breaker_state{service=\"message-service\"}", "legendFormat": "Message", "refId": "A" }],
+      "title": "💬 Message Service",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "📈 Fallos del Circuit Breaker por Microservicio",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 6 },
+      "id": 20,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right" } },
       "targets": [
-        {
-          "expr": "rate(rate_limit_exceeded_total[5m])",
-          "refId": "A"
-        }
+        { "expr": "rate(circuit_breaker_failures_total{service=\"profile-service\"}[1m])", "legendFormat": "👤 Profile", "refId": "A" },
+        { "expr": "rate(circuit_breaker_failures_total{service=\"product-service\"}[1m])", "legendFormat": "📦 Product", "refId": "B" },
+        { "expr": "rate(circuit_breaker_failures_total{service=\"order-service\"}[1m])", "legendFormat": "🛒 Order", "refId": "C" },
+        { "expr": "rate(circuit_breaker_failures_total{service=\"message-service\"}[1m])", "legendFormat": "💬 Message", "refId": "D" }
+      ],
+      "title": "🔥 Tasa de Fallos por Microservicio (por minuto)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "id": 102,
+      "title": "📊 Métricas HTTP por Microservicio",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 13 },
+      "id": 30,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/profiles.*\"}[5m]))", "legendFormat": "👤 Profile", "refId": "A" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/products.*\"}[5m]))", "legendFormat": "📦 Product", "refId": "B" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/orders.*\"}[5m]))", "legendFormat": "🛒 Order", "refId": "C" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/messages.*\"}[5m]))", "legendFormat": "💬 Message", "refId": "D" }
+      ],
+      "title": "📈 Request Rate por Microservicio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 }, "unit": "s" } },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 13 },
+      "id": 31,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{route=~\"/api/profiles.*\"}[5m])) by (le))", "legendFormat": "👤 Profile P95", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{route=~\"/api/products.*\"}[5m])) by (le))", "legendFormat": "📦 Product P95", "refId": "B" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{route=~\"/api/orders.*\"}[5m])) by (le))", "legendFormat": "🛒 Order P95", "refId": "C" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{route=~\"/api/messages.*\"}[5m])) by (le))", "legendFormat": "💬 Message P95", "refId": "D" }
+      ],
+      "title": "⏱️ Latencia P95 por Microservicio",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 },
+      "id": 103,
+      "title": "❌ Errores por Microservicio",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 20 } } },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 21 },
+      "id": 40,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/profiles.*\", status_code=~\"5..\"}[5m]))", "legendFormat": "👤 Profile 5xx", "refId": "A" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/products.*\", status_code=~\"5..\"}[5m]))", "legendFormat": "📦 Product 5xx", "refId": "B" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/orders.*\", status_code=~\"5..\"}[5m]))", "legendFormat": "🛒 Order 5xx", "refId": "C" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/messages.*\", status_code=~\"5..\"}[5m]))", "legendFormat": "💬 Message 5xx", "refId": "D" }
+      ],
+      "title": "❌ Errores 5xx por Microservicio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 20 } } },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 21 },
+      "id": 41,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/profiles.*\", status_code=~\"4..\"}[5m]))", "legendFormat": "👤 Profile 4xx", "refId": "A" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/products.*\", status_code=~\"4..\"}[5m]))", "legendFormat": "📦 Product 4xx", "refId": "B" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/orders.*\", status_code=~\"4..\"}[5m]))", "legendFormat": "🛒 Order 4xx", "refId": "C" },
+        { "expr": "sum(rate(http_requests_total{route=~\"/api/messages.*\", status_code=~\"4..\"}[5m]))", "legendFormat": "💬 Message 4xx", "refId": "D" }
+      ],
+      "title": "⚠️ Errores 4xx por Microservicio",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "id": 104,
+      "title": "🛡️ Seguridad y Rate Limiting",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 28 },
+      "id": 50,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "rate(rate_limit_exceeded_total[5m])", "legendFormat": "Rate Limit Exceeded", "refId": "A" }
       ],
       "title": "⛔ Rate Limit Exceeded",
       "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 28 },
+      "id": 51,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        { "expr": "rate(auth_failures_total[5m])", "legendFormat": "{{reason}}", "refId": "A" }
+      ],
+      "title": "🔐 Fallos de Autenticación",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "id": 105,
+      "title": "📋 Resumen Total",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 35 },
+      "id": 60,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(increase(http_requests_total[1h]))", "legendFormat": "", "refId": "A" }],
+      "title": "📊 Total Requests (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 35 },
+      "id": 61,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(increase(http_requests_total{status_code=~\"5..\"}[1h]))", "legendFormat": "", "refId": "A" }],
+      "title": "❌ Total Errores 5xx (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 35 },
+      "id": 62,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(increase(circuit_breaker_failures_total[1h]))", "legendFormat": "", "refId": "A" }],
+      "title": "🔥 Total CB Failures (1h)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 35 },
+      "id": 63,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "count(circuit_breaker_state == 1)", "legendFormat": "", "refId": "A" }],
+      "title": "🚨 Servicios en OPEN",
+      "type": "stat"
     }
   ],
   "refresh": "5s",
   "schemaVersion": 27,
   "style": "dark",
-  "tags": [
-    "microservices",
-    "prometheus",
-    "monitoring"
-  ],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-30m",
-    "to": "now"
-  },
+  "tags": ["microservices", "prometheus", "monitoring", "circuit-breaker"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
   "timepicker": {},
   "timezone": "",
   "title": "📊 Raíz Marketplace - Microservicios",
   "uid": "raiz-microservices",
-  "version": 0
+  "version": 1
 }
