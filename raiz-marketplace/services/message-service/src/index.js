@@ -16,6 +16,7 @@ import swaggerUi from 'swagger-ui-express';
 import messageRoutes from './routes/messages.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { logger } from './utils/logger.js';
+import { httpRequestDuration, httpRequestsTotal, websocketConnections, websocketMessagesTotal, getMetrics } from './utils/prometheus.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -91,6 +92,9 @@ io.on('connection', (socket) => {
     connectedAt: new Date()
   });
 
+  // Actualizar métrica de conexiones WebSocket
+  websocketConnections.set(connectedUsers.size);
+
   // Emitir lista de usuarios conectados
   io.emit('users:online', Array.from(connectedUsers.values()).map(u => u.username));
 
@@ -142,6 +146,9 @@ io.on('connection', (socket) => {
 
       io.to('forum:global').emit('forum:newMessage', messagePayload);
       
+      // Registrar métrica de mensaje WebSocket
+      websocketMessagesTotal.inc({ event_type: 'forum_message' });
+      
       logger.info(`Mensaje enviado por ${socket.userProfile.username}`);
     } catch (error) {
       logger.error('Error en forum:message:', error);
@@ -167,6 +174,10 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     logger.info(`Usuario desconectado: ${socket.userId}`);
     connectedUsers.delete(socket.userId);
+    
+    // Actualizar métrica de conexiones WebSocket
+    websocketConnections.set(connectedUsers.size);
+    
     io.emit('users:online', Array.from(connectedUsers.values()).map(u => u.username));
   });
 });
@@ -269,6 +280,30 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Prometheus metrics
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestDuration.observe(
+      {
+        method: req.method,
+        route: req.route?.path || req.path,
+        status_code: res.statusCode
+      },
+      duration
+    );
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: req.route?.path || req.path,
+      status_code: res.statusCode
+    });
+  });
+  
+  next();
+});
+
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`);
   next();
@@ -309,6 +344,12 @@ app.get('/health', (req, res) => {
     connectedUsers: connectedUsers.size,
     timestamp: new Date().toISOString()
   });
+});
+
+// Prometheus metrics endpoint
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send(getMetrics());
 });
 
 // ===========================================

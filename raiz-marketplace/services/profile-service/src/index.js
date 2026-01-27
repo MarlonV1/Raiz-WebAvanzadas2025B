@@ -13,6 +13,7 @@ import swaggerUi from 'swagger-ui-express';
 import profileRoutes from './routes/profiles.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { logger } from './utils/logger.js';
+import { httpRequestDuration, httpRequestsTotal, getMetrics } from './utils/prometheus.js';
 
 const app = express();
 const PORT = process.env.PORT || 8001;
@@ -85,6 +86,30 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use(cors());
 app.use(express.json());
 
+// Prometheus metrics
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestDuration.observe(
+      {
+        method: req.method,
+        route: req.route?.path || req.path,
+        status_code: res.statusCode
+      },
+      duration
+    );
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: req.route?.path || req.path,
+      status_code: res.statusCode
+    });
+  });
+  
+  next();
+});
+
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`);
   next();
@@ -123,6 +148,12 @@ app.get('/health', (req, res) => {
     service: 'profile-service',
     timestamp: new Date().toISOString()
   });
+});
+
+// Prometheus metrics endpoint
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send(getMetrics());
 });
 
 // ===========================================

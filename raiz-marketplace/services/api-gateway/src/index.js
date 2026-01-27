@@ -22,6 +22,7 @@ import { circuitBreakerMiddleware } from './middleware/circuitBreaker.js';
 import { proxyMiddleware } from './middleware/proxy.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { logger } from './utils/logger.js';
+import { httpRequestDuration, httpRequestsTotal, getMetrics } from './utils/prometheus.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -52,6 +53,30 @@ app.use(morgan('combined', {
   stream: { write: (message) => logger.info(message.trim()) }
 }));
 
+// Prometheus metrics
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestDuration.observe(
+      {
+        method: req.method,
+        route: req.route?.path || req.path,
+        status_code: res.statusCode
+      },
+      duration
+    );
+    httpRequestsTotal.inc({
+      method: req.method,
+      route: req.route?.path || req.path,
+      status_code: res.statusCode
+    });
+  });
+  
+  next();
+});
+
 // Rate limiting global
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000, // 1 minuto
@@ -76,6 +101,15 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// ===========================================
+// METRICS ENDPOINT
+// ===========================================
+
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send(getMetrics());
 });
 
 // ===========================================

@@ -1,0 +1,41 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'raiz-marketplace'
+
+scrape_configs:
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+  - job_name: 'profile-service'
+    static_configs:
+      - targets: ['profile-service:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['product-service:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+  - job_name: 'order-service'
+    static_configs:
+      - targets: ['order-service:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+
+  - job_name: 'message-service'
+    static_configs:
+      - targets: ['message-service:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    scrape_timeout: 5s
