@@ -107,9 +107,10 @@ app.get('/health', (req, res) => {
 // METRICS ENDPOINT
 // ===========================================
 
-app.get('/metrics', (req, res) => {
+app.get('/metrics', async (req, res) => {
   res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
-  res.send(getMetrics());
+  const metrics = await getMetrics();
+  res.send(metrics);
 });
 
 // ===========================================

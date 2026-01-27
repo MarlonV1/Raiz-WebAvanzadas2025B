@@ -347,9 +347,10 @@ app.get('/health', (req, res) => {
 });
 
 // Prometheus metrics endpoint
-app.get('/metrics', (req, res) => {
+app.get('/metrics', async (req, res) => {
   res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
-  res.send(getMetrics());
+  const metrics = await getMetrics();
+  res.send(metrics);
 });
 
 // ===========================================
