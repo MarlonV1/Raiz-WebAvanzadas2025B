@@ -1,348 +1,451 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Foro - Raíz Marketplace</title>
-  <link rel="stylesheet" href="../css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <style>
-    .forum-container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .forum-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .forum-header h1 {
-      color: var(--primary-600);
-      margin-bottom: 0.5rem;
-      font-weight: 800;
-    }
-
-    .online-users {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      color: var(--gray-500);
-      font-size: 0.9rem;
-    }
-
-    .online-dot {
-      width: 10px;
-      height: 10px;
-      background: var(--success);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .messages-container {
-      background: var(--white);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg);
-      height: 500px;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid var(--gray-100);
-    }
-
-    .messages-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .message-item {
-      display: flex;
-      gap: 0.75rem;
-      padding: 1rem;
-      border-radius: var(--radius-lg);
-      background: var(--gray-50);
-      animation: slideIn 0.3s ease;
-      max-width: 80%;
-      align-self: flex-start;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foro - Raíz Marketplace</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      /* =========================================
+         FONDO GENERAL DE LA PÁGINA (ORGÁNICO)
+         ========================================= */
+      body {
+        /* Color base neutro */
+        background-color: #f8fafc;
+        /* Gradientes "luz entre hojas" */
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(16, 185, 129, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(6, 95, 70, 0.08) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+        min-height: 100vh;
       }
-      to {
+
+      /* CORRECCIÓN AQUÍ: Solo el header lleva fondo blanco */
+      #header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 10;
+      }
+
+      /* El footer solo necesita posición, el color negro lo toma de styles.css */
+      footer {
+        position: relative;
+        z-index: 10;
+        /* Eliminamos 'background: white' para que vuelva a ser oscuro */
+      }
+
+      /* =========================================
+         ESTRUCTURA PRINCIPAL
+         ========================================= */
+      .forum-container {
+        max-width: 1400px;
+        width: 95%;
+        margin: 3rem auto;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .forum-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+      }
+
+      .forum-header h1 {
+        color: var(--primary-700);
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+        font-size: 2.75rem;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+      }
+
+      .forum-header p {
+        color: var(--gray-600);
+        font-size: 1.1rem;
+      }
+
+      /* =========================================
+         ÁREA DEL CHAT (CONTENEDOR)
+         ========================================= */
+      .messages-container {
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        /* Sombra pronunciada para flotar sobre el fondo */
+        box-shadow: 0 20px 40px -12px rgba(6, 78, 59, 0.15);
+        height: 75vh;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        overflow: hidden;
+      }
+
+      /* FONDO INTERNO DEL CHAT (Patrón de puntos) */
+      .messages-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background-color: var(--primary-50);
+        background-image: radial-gradient(
+          var(--primary-200) 2px,
+          transparent 2px
+        );
+        background-size: 32px 32px;
+      }
+
+      /* =========================================
+         BURBUJAS DE MENSAJE
+         ========================================= */
+      /* 1. Mensajes recibidos (Izquierda) */
+      .message-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        max-width: 70%;
+        align-self: flex-start;
+        animation: slideIn 0.3s ease;
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 18px;
+        border-top-left-radius: 2px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        color: var(--gray-800);
+      }
+
+      /* 2. Mis mensajes (Derecha) */
+      .message-item.own {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+        background: var(--primary-600);
+        border: 1px solid var(--primary-700);
+        border-radius: 18px;
+        border-top-right-radius: 2px;
+        border-top-left-radius: 18px;
+        color: white;
+        box-shadow: 0 2px 8px rgba(6, 95, 70, 0.15);
+      }
+
+      /* FORZAR transparencia en hijos */
+      .message-item.own .message-content,
+      .message-item.own .message-text,
+      .message-item.own .message-header {
+        background: transparent !important;
+        color: white !important;
+      }
+
+      .message-item.own .message-username {
+        color: white !important;
+        font-weight: 700;
         opacity: 1;
-        transform: translateY(0);
       }
-    }
 
-    .message-item.own {
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
-      flex-direction: row-reverse;
-      align-self: flex-end;
-      color: white;
-    }
+      .message-item.own .message-time {
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
 
-    .message-item.own .message-username {
-      color: var(--primary-100);
-    }
+      /* =========================================
+         ELEMENTOS INTERNOS
+         ========================================= */
+      .message-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: var(--primary-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-700);
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        border: 2px solid white;
+        box-shadow: var(--shadow-sm);
+      }
 
-    .message-item.own .message-time {
-      color: var(--primary-200);
-    }
+      .message-item.own .message-avatar {
+        background: white;
+        color: var(--primary-600);
+        border: 2px solid var(--primary-400);
+      }
 
-    .message-item.own .message-text {
-      color: white;
-    }
+      .message-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
 
-    .message-item.own .message-avatar {
-      background: var(--white);
-      color: var(--primary-600);
-    }
+      .message-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
 
-    .message-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-600) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 1rem;
-      flex-shrink: 0;
-      box-shadow: var(--shadow-sm);
-    }
+      .message-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.85rem;
+      }
 
-    .message-avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+      .message-item.own .message-header {
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+      }
 
-    .message-content {
-      flex: 1;
-      min-width: 0;
-    }
+      .message-username {
+        font-weight: 700;
+        color: var(--primary-700);
+      }
 
-    .message-header {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
-    }
+      .message-time {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+      }
 
-    .message-item.own .message-header {
-      flex-direction: row-reverse;
-      text-align: right;
-    }
+      .message-text {
+        font-size: 1rem;
+        line-height: 1.5;
+        word-wrap: break-word;
+      }
 
-    .message-item.own .message-content {
-      text-align: right;
-    }
+      .message-item.own .message-text {
+        text-align: left;
+      }
 
-    .message-username {
-      font-weight: 600;
-      color: var(--primary-600);
-    }
+      /* =========================================
+         INPUT Y BOTONES
+         ========================================= */
+      .message-input-container {
+        padding: 1.5rem;
+        background: white;
+        border-top: 1px solid var(--gray-100);
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
 
-    .message-time {
-      font-size: 0.75rem;
-      color: var(--gray-400);
-    }
+      .message-input {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-full);
+        font-size: 1rem;
+        outline: none;
+        transition: all var(--transition);
+        background: var(--gray-50);
+      }
 
-    .message-text {
-      word-wrap: break-word;
-      line-height: 1.5;
-    }
+      .message-input:focus {
+        border-color: var(--primary-500);
+        background: white;
+        box-shadow: 0 0 0 4px var(--primary-50);
+      }
 
-    .message-input-container {
-      padding: 1.25rem;
-      border-top: 1px solid var(--gray-100);
-      display: flex;
-      gap: 1rem;
-      background: var(--gray-50);
-    }
+      .send-btn {
+        padding: 0 2rem;
+        height: 52px;
+        background: var(--primary-600);
+        color: white;
+        border: none;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        font-weight: 700;
+        transition: all var(--transition);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .message-input {
-      flex: 1;
-      padding: 1rem 1.5rem;
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius-full);
-      font-size: 1rem;
-      outline: none;
-      transition: all var(--transition);
-    }
+      .send-btn:hover {
+        background: var(--primary-700);
+        transform: translateY(-2px);
+      }
 
-    .message-input:focus {
-      border-color: var(--primary-500);
-      box-shadow: 0 0 0 4px var(--primary-100);
-    }
+      /* =========================================
+         UTILIDADES
+         ========================================= */
+      .typing-indicator {
+        padding: 0.5rem 2rem;
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        background: white;
+        border-top: 1px solid var(--gray-50);
+        font-style: italic;
+        min-height: 30px;
+      }
 
-    .send-btn {
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
-      color: white;
-      border: none;
-      border-radius: var(--radius-full);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all var(--transition);
-      box-shadow: var(--shadow-sm);
-    }
+      .online-users {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-full);
+        display: inline-flex;
+        margin-top: 0.5rem;
+      }
 
-    .send-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
+      .online-dot {
+        width: 10px;
+        height: 10px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
 
-    .send-btn:disabled {
-      background: var(--gray-300);
-      cursor: not-allowed;
-      transform: none;
-    }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
 
-    .typing-indicator {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-      color: var(--gray-500);
-      font-style: italic;
-      min-height: 24px;
-    }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .connection-status {
-      text-align: center;
-      padding: 0.5rem;
-      font-size: 0.85rem;
-    }
+      .connection-status {
+        text-align: center;
+        padding: 0.5rem;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+      .connection-status.connected {
+        color: var(--success);
+      }
+      .connection-status.disconnected {
+        color: var(--error);
+      }
+      .connection-status.connecting {
+        color: var(--accent-500);
+      }
 
-    .connection-status.connected {
-      color: var(--success);
-    }
+      .empty-messages {
+        text-align: center;
+        color: var(--primary-700);
+        padding: 3rem;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: var(--radius-lg);
+        margin: auto;
+        border: 1px dashed var(--primary-300);
+      }
 
-    .connection-status.disconnected {
-      color: var(--error);
-    }
-
-    .connection-status.connecting {
-      color: var(--accent-500);
-    }
-
-    .empty-messages {
-      text-align: center;
-      color: var(--gray-400);
-      padding: 3rem;
-    }
-
-    .empty-messages span {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 1rem;
-    }
-
-    .login-prompt {
-      text-align: center;
-      padding: 3rem;
-      background: var(--white);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .login-prompt h2 {
-      margin-bottom: 1rem;
-      color: var(--gray-800);
-    }
-
-    .login-prompt a {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 1rem 2.5rem;
-      background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
-      color: white;
-      text-decoration: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      transition: all var(--transition);
-    }
-
-    .login-prompt a:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-  </style>
-</head>
-<body>
-  <header id="header">
-    <div class="navbar">
-      <a href="/" class="logo">🌱 Raíz</a>
-      <nav id="nav-menu">
-        <a href="/">Inicio</a>
-        <a href="/pages/products.html">Productos</a>
-        <a href="/pages/forum.html" class="active">Foro</a>
-        <div id="nav-auth"></div>
-      </nav>
-    </div>
-  </header>
-
-  <main class="forum-container">
-    <div class="forum-header">
-      <h1>💬 Foro de la Comunidad</h1>
-      <p>Comparte, pregunta y conecta con otros miembros de Raíz</p>
-      <div class="online-users" id="online-users">
-        <span class="online-dot"></span>
-        <span id="online-count">0</span> usuarios en línea
+      .login-prompt {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
+        max-width: 500px;
+        margin: 4rem auto;
+        border: 1px solid var(--gray-100);
+      }
+      .login-prompt h2 {
+        margin-bottom: 1rem;
+        color: var(--primary-700);
+      }
+      .login-prompt a {
+        display: inline-block;
+        margin-top: 1.5rem;
+        padding: 1rem 2.5rem;
+        background: var(--primary-600);
+        color: white;
+        text-decoration: none;
+        border-radius: var(--radius-full);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <header id="header">
+      <div class="navbar">
+        <a href="/" class="logo">🌱 Raíz</a>
+        <nav id="nav-menu">
+          <a href="/">Inicio</a>
+          <a href="/pages/products.html">Productos</a>
+          <a href="/pages/forum.html" class="active">Foro</a>
+          <div id="nav-auth"></div>
+        </nav>
       </div>
-    </div>
+    </header>
 
-    <div id="connection-status" class="connection-status connecting">
-      Conectando...
-    </div>
+    <main class="forum-container">
+      <div class="forum-header">
+        <h1>💬 Foro de la Comunidad</h1>
+        <p>Comparte, pregunta y conecta con otros miembros de Raíz</p>
+        <div class="online-users" id="online-users">
+          <span class="online-dot"></span>
+          <span id="online-count">0</span> usuarios en línea
+        </div>
+      </div>
 
-    <div id="forum-content">
-      <!-- Se llena dinámicamente -->
-    </div>
-  </main>
+      <div id="connection-status" class="connection-status connecting">
+        Conectando...
+      </div>
 
-  <script src="../js/config.js"></script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/auth.js"></script>
-  <script src="../js/app.js"></script>
-  
-  <script>
-    let socket = null;
-    let currentUser = null;
-    let typingTimeout = null;
+      <div id="forum-content">
+        <!-- Se llena dinámicamente -->
+      </div>
+    </main>
 
-    // Inicializar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', async () => {
-      currentUser = await Auth.getUser();
-      
-      if (!currentUser) {
-        showLoginPrompt();
-        return;
-      }
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/app.js"></script>
 
-      showForumUI();
-      await loadMessages();
-      connectWebSocket();
-    });
+    <script>
+      let socket = null;
+      let currentUser = null;
+      let typingTimeout = null;
 
-    function showLoginPrompt() {
-      document.getElementById('forum-content').innerHTML = `
+      // Inicializar cuando el DOM esté listo
+      document.addEventListener("DOMContentLoaded", async () => {
+        currentUser = await Auth.getUser();
+
+        if (!currentUser) {
+          showLoginPrompt();
+          return;
+        }
+
+        showForumUI();
+        await loadMessages();
+        connectWebSocket();
+      });
+
+      function showLoginPrompt() {
+        document.getElementById("forum-content").innerHTML = `
         <div class="login-prompt">
           <span style="font-size: 4rem;">🔒</span>
           <h2>Inicia sesión para participar</h2>
@@ -350,11 +453,11 @@
           <a href="/pages/login.html">Iniciar Sesión</a>
         </div>
       `;
-      document.getElementById('connection-status').style.display = 'none';
-    }
+        document.getElementById("connection-status").style.display = "none";
+      }
 
-    function showForumUI() {
-      document.getElementById('forum-content').innerHTML = `
+      function showForumUI() {
+        document.getElementById("forum-content").innerHTML = `
         <div class="messages-container">
           <div class="messages-list" id="messages-list">
             <div class="empty-messages">
@@ -378,82 +481,88 @@
         </div>
       `;
 
-      // Event listeners
-      const input = document.getElementById('message-input');
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-
-      input.addEventListener('input', () => {
-        if (socket && socket.connected) {
-          socket.emit('forum:typing');
-          
-          clearTimeout(typingTimeout);
-          typingTimeout = setTimeout(() => {
-            socket.emit('forum:stopTyping');
-          }, 1000);
-        }
-      });
-    }
-
-    async function loadMessages() {
-      try {
-        const session = await getSession();
-        const response = await fetch(`${CONFIG.API_URL}/api/messages/forum?limit=50`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
+        // Event listeners
+        const input = document.getElementById("message-input");
+        input.addEventListener("keypress", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
           }
         });
 
-        if (!response.ok) throw new Error('Error cargando mensajes');
+        input.addEventListener("input", () => {
+          if (socket && socket.connected) {
+            socket.emit("forum:typing");
 
-        const data = await response.json();
-        renderMessages(data.messages || []);
-      } catch (error) {
-        console.error('Error loading messages:', error);
-        document.getElementById('messages-list').innerHTML = `
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+              socket.emit("forum:stopTyping");
+            }, 1000);
+          }
+        });
+      }
+
+      async function loadMessages() {
+        try {
+          const session = await getSession();
+          const response = await fetch(
+            `${CONFIG.API_URL}/api/messages/forum?limit=50`,
+            {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            },
+          );
+
+          if (!response.ok) throw new Error("Error cargando mensajes");
+
+          const data = await response.json();
+          renderMessages(data.messages || []);
+        } catch (error) {
+          console.error("Error loading messages:", error);
+          document.getElementById("messages-list").innerHTML = `
           <div class="empty-messages">
             <span>⚠️</span>
             <p>Error al cargar mensajes</p>
           </div>
         `;
+        }
       }
-    }
 
-    function renderMessages(messages) {
-      const container = document.getElementById('messages-list');
-      
-      if (messages.length === 0) {
-        container.innerHTML = `
+      function renderMessages(messages) {
+        const container = document.getElementById("messages-list");
+
+        if (messages.length === 0) {
+          container.innerHTML = `
           <div class="empty-messages">
             <span>🌱</span>
             <p>¡Sé el primero en escribir en el foro!</p>
           </div>
         `;
-        return;
+          return;
+        }
+
+        container.innerHTML = messages
+          .map((msg) => createMessageHTML(msg))
+          .join("");
+        scrollToBottom();
       }
 
-      container.innerHTML = messages.map(msg => createMessageHTML(msg)).join('');
-      scrollToBottom();
-    }
+      function createMessageHTML(msg) {
+        const isOwn = msg.user_id === currentUser?.id;
+        const initial = (msg.username || "U")[0].toUpperCase();
+        const time = new Date(msg.sent_at).toLocaleTimeString("es", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-    function createMessageHTML(msg) {
-      const isOwn = msg.user_id === currentUser?.id;
-      const initial = (msg.username || 'U')[0].toUpperCase();
-      const time = new Date(msg.sent_at).toLocaleTimeString('es', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-
-      return `
-        <div class="message-item ${isOwn ? 'own' : ''}">
+        return `
+        <div class="message-item ${isOwn ? "own" : ""}">
           <div class="message-avatar">
-            ${msg.avatar_url 
-              ? `<img src="${msg.avatar_url}" alt="${msg.username}">` 
-              : initial
+            ${
+              msg.avatar_url
+                ? `<img src="${msg.avatar_url}" alt="${msg.username}">`
+                : initial
             }
           </div>
           <div class="message-content">
@@ -465,135 +574,143 @@
           </div>
         </div>
       `;
-    }
-
-    async function connectWebSocket() {
-      try {
-        const session = await getSession();
-        if (!session) return;
-
-        const wsUrl = CONFIG.API_URL.replace('http', 'ws').replace(':8000', ':8004');
-        
-        socket = io(wsUrl.replace('ws://', 'http://').replace('wss://', 'https://'), {
-          auth: { token: session.access_token },
-          transports: ['websocket', 'polling'],
-          path: '/socket.io'
-        });
-
-        socket.on('connect', () => {
-          console.log('WebSocket conectado');
-          updateConnectionStatus('connected', 'Conectado');
-        });
-
-        socket.on('disconnect', () => {
-          console.log('WebSocket desconectado');
-          updateConnectionStatus('disconnected', 'Desconectado - Reconectando...');
-        });
-
-        socket.on('connect_error', (error) => {
-          console.error('Error de conexión:', error);
-          updateConnectionStatus('disconnected', 'Error de conexión');
-        });
-
-        socket.on('forum:newMessage', (message) => {
-          appendMessage(message);
-        });
-
-        socket.on('forum:userTyping', (data) => {
-          document.getElementById('typing-indicator').textContent = 
-            `${data.username} está escribiendo...`;
-        });
-
-        socket.on('forum:userStopTyping', () => {
-          document.getElementById('typing-indicator').textContent = '';
-        });
-
-        socket.on('users:online', (users) => {
-          document.getElementById('online-count').textContent = users.length;
-        });
-
-        socket.on('error', (error) => {
-          console.error('Socket error:', error);
-          alert(error.message || 'Error en el servidor');
-        });
-
-      } catch (error) {
-        console.error('Error connecting WebSocket:', error);
-        updateConnectionStatus('disconnected', 'Error de conexión');
       }
-    }
 
-    function updateConnectionStatus(status, text) {
-      const el = document.getElementById('connection-status');
-      el.className = `connection-status ${status}`;
-      el.textContent = text;
-    }
+      async function connectWebSocket() {
+        try {
+          const session = await getSession();
+          if (!session) return;
 
-    function sendMessage() {
-      const input = document.getElementById('message-input');
-      const message = input.value.trim();
+          const wsUrl = CONFIG.API_URL.replace("http", "ws").replace(
+            ":8000",
+            ":8004",
+          );
 
-      if (!message || !socket || !socket.connected) return;
+          socket = io(
+            wsUrl.replace("ws://", "http://").replace("wss://", "https://"),
+            {
+              auth: { token: session.access_token },
+              transports: ["websocket", "polling"],
+              path: "/socket.io",
+            },
+          );
 
-      socket.emit('forum:message', { message_text: message });
-      input.value = '';
-      socket.emit('forum:stopTyping');
-    }
+          socket.on("connect", () => {
+            console.log("WebSocket conectado");
+            updateConnectionStatus("connected", "Conectado");
+          });
 
-    function appendMessage(message) {
-      const container = document.getElementById('messages-list');
-      
-      // Remover mensaje vacío si existe
-      const empty = container.querySelector('.empty-messages');
-      if (empty) empty.remove();
+          socket.on("disconnect", () => {
+            console.log("WebSocket desconectado");
+            updateConnectionStatus(
+              "disconnected",
+              "Desconectado - Reconectando...",
+            );
+          });
 
-      // Agregar nuevo mensaje
-      container.insertAdjacentHTML('beforeend', createMessageHTML(message));
-      scrollToBottom();
+          socket.on("connect_error", (error) => {
+            console.error("Error de conexión:", error);
+            updateConnectionStatus("disconnected", "Error de conexión");
+          });
 
-      // Limpiar indicador de escritura
-      document.getElementById('typing-indicator').textContent = '';
-    }
+          socket.on("forum:newMessage", (message) => {
+            appendMessage(message);
+          });
 
-    function scrollToBottom() {
-      const container = document.getElementById('messages-list');
-      container.scrollTop = container.scrollHeight;
-    }
+          socket.on("forum:userTyping", (data) => {
+            document.getElementById("typing-indicator").textContent =
+              `${data.username} está escribiendo...`;
+          });
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+          socket.on("forum:userStopTyping", () => {
+            document.getElementById("typing-indicator").textContent = "";
+          });
 
-    // Limpiar al salir
-    window.addEventListener('beforeunload', () => {
-      if (socket) socket.disconnect();
-    });
-  </script>
+          socket.on("users:online", (users) => {
+            document.getElementById("online-count").textContent = users.length;
+          });
 
-  <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-brand">
-          <a href="/" class="logo">🌱 Raíz</a>
-          <p>Conectando el campo con la ciudad desde 2025.</p>
+          socket.on("error", (error) => {
+            console.error("Socket error:", error);
+            alert(error.message || "Error en el servidor");
+          });
+        } catch (error) {
+          console.error("Error connecting WebSocket:", error);
+          updateConnectionStatus("disconnected", "Error de conexión");
+        }
+      }
+
+      function updateConnectionStatus(status, text) {
+        const el = document.getElementById("connection-status");
+        el.className = `connection-status ${status}`;
+        el.textContent = text;
+      }
+
+      function sendMessage() {
+        const input = document.getElementById("message-input");
+        const message = input.value.trim();
+
+        if (!message || !socket || !socket.connected) return;
+
+        socket.emit("forum:message", { message_text: message });
+        input.value = "";
+        socket.emit("forum:stopTyping");
+      }
+
+      function appendMessage(message) {
+        const container = document.getElementById("messages-list");
+
+        // Remover mensaje vacío si existe
+        const empty = container.querySelector(".empty-messages");
+        if (empty) empty.remove();
+
+        // Agregar nuevo mensaje
+        container.insertAdjacentHTML("beforeend", createMessageHTML(message));
+        scrollToBottom();
+
+        // Limpiar indicador de escritura
+        document.getElementById("typing-indicator").textContent = "";
+      }
+
+      function scrollToBottom() {
+        const container = document.getElementById("messages-list");
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Limpiar al salir
+      window.addEventListener("beforeunload", () => {
+        if (socket) socket.disconnect();
+      });
+    </script>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <a href="/" class="logo">🌱 Raíz</a>
+            <p>Conectando el campo con la ciudad desde 2025.</p>
+          </div>
+          <div class="footer-section">
+            <h4>Explorar</h4>
+            <a href="/pages/products.html">Productos</a>
+            <a href="/pages/forum.html">Foro</a>
+          </div>
+          <div class="footer-section">
+            <h4>Soporte</h4>
+            <a href="#">Ayuda</a>
+            <a href="#">Términos</a>
+          </div>
         </div>
-        <div class="footer-section">
-          <h4>Explorar</h4>
-          <a href="/pages/products.html">Productos</a>
-          <a href="/pages/forum.html">Foro</a>
-        </div>
-        <div class="footer-section">
-          <h4>Soporte</h4>
-          <a href="#">Ayuda</a>
-          <a href="#">Términos</a>
+        <div class="footer-bottom">
+          <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2025 Raíz Marketplace. Todos los derechos reservados.</p>
-      </div>
-    </div>
-  </footer>
-</body>
+    </footer>
+  </body>
 </html>
