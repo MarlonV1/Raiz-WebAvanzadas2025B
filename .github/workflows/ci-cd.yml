@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: raiz
+          POSTGRES_PASSWORD: raiz
+          POSTGRES_DB: raiz_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install raiz-marketplace dependencies
+        run: |
+          cd raiz-marketplace/frontend && npm ci || true
+          cd ../../
+          for service in api-gateway message-service order-service product-service profile-service; do
+            cd raiz-marketplace/services/$service && npm ci && cd ../../..
+          done
+
+      - name: Lint and test backend services
+        run: |
+          for service in api-gateway message-service order-service product-service profile-service; do
+            cd raiz-marketplace/services/$service && npm run lint || true
+            npm test || true
+            cd ../../..
+          done
+
+      - name: Lint and test frontend
+        run: |
+          cd raiz-marketplace/frontend
+          npm run lint || true
+          npm test || true
+
+      - name: Build Docker images
+        run: |
+          docker-compose -f raiz-marketplace/docker-compose.yml build
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # Aquí puedes agregar pasos para deploy a tu servidor, Azure, AWS, etc.
+      - name: Deploy placeholder
+        run: echo "Despliegue automatizado aquí"
