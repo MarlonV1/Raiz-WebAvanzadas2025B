@@ -51,6 +51,6 @@ jobs:
         run: |
           docker compose -f raiz-marketplace/docker-compose.yml build
       - name: Scan Docker images
-        uses: docker/scan-action@v2
+        uses: docker/scan-action@v1
         with:
           image: raiz-marketplace_api-gateway:latest
