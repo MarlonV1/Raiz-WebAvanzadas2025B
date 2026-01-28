@@ -6,10 +6,16 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
+    if: github.repository == 'MarlonV1/Raiz-WebAvanzadas2025B'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,6 +31,7 @@ jobs:
   dependabot:
     name: Dependency Review
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,6 +41,7 @@ jobs:
   docker-scan:
     name: Docker Image Scan
     runs-on: ubuntu-latest
+    if: github.repository == 'MarlonV1/Raiz-WebAvanzadas2025B'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,13 +49,8 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build Docker images
         run: |
-          docker-compose -f raiz-marketplace/docker-compose.yml build
+          docker compose -f raiz-marketplace/docker-compose.yml build
       - name: Scan Docker images
-        uses: crazy-max/ghaction-docker-buildx@v5
+        uses: docker/scan-action@v2
         with:
-          buildx-version: latest
-          image: raiz-marketplace_api-gateway
-          tags: latest
-          push: false
-          load: true
-          scan: true
+          image: raiz-marketplace_api-gateway:latest

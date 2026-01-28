@@ -34,10 +34,15 @@ jobs:
 
       - name: Install raiz-marketplace dependencies
         run: |
-          cd raiz-marketplace/frontend && npm ci || true
-          cd ../../
+          # Frontend: solo si existe package.json y package-lock.json
+          if [ -f raiz-marketplace/frontend/package.json ] && [ -f raiz-marketplace/frontend/package-lock.json ]; then
+            cd raiz-marketplace/frontend && npm ci && cd ../../..
+          fi
+          # Microservicios: solo si existen carpeta y archivos necesarios
           for service in api-gateway message-service order-service product-service profile-service; do
-            cd raiz-marketplace/services/$service && npm ci && cd ../../..
+            if [ -d raiz-marketplace/services/$service ] && [ -f raiz-marketplace/services/$service/package.json ] && [ -f raiz-marketplace/services/$service/package-lock.json ]; then
+              cd raiz-marketplace/services/$service && npm ci && cd ../../..
+            fi
           done
 
       - name: Lint and test backend services
@@ -56,7 +61,7 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker-compose -f raiz-marketplace/docker-compose.yml build
+          docker compose -f raiz-marketplace/docker-compose.yml build
 
   deploy:
     needs: build-and-test
