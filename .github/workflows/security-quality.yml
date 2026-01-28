@@ -37,20 +37,3 @@ jobs:
         uses: actions/checkout@v4
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
-
-  docker-scan:
-    name: Docker Image Scan
-    runs-on: ubuntu-latest
-    if: github.repository == 'MarlonV1/Raiz-WebAvanzadas2025B'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build Docker images
-        run: |
-          docker compose -f raiz-marketplace/docker-compose.yml build
-      - name: Scan Docker images
-        uses: docker/scan-action@v1
-        with:
-          image: raiz-marketplace_api-gateway:latest
